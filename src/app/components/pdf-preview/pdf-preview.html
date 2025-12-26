@@ -1,0 +1,6 @@
+<div *ngIf="cvData" class="pdf-container">
+  <app-cv-preview [data]="cvData"></app-cv-preview>
+</div>
+<div *ngIf="!cvData" class="flex items-center justify-center h-screen text-slate-400">
+  Loading PDF Preview...
+</div>

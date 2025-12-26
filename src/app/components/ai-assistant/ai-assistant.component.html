@@ -1,0 +1,103 @@
+<div class="mt-2">
+    <div *ngIf="!suggestions && !bullets" class="flex flex-wrap gap-2">
+        <!-- Standard Enhance -->
+        <button type="button" (click)="handleEnhance('standard')" [disabled]="loading || isTextEmpty"
+            class="flex items-center gap-1.5 text-xs font-medium text-euro-blue hover:text-euro-dark disabled:opacity-50 transition-colors">
+            <lucide-icon [name]="loading ? 'loader-2' : 'sparkles'" [size]="14"
+                [class]="loading ? 'animate-spin' : ''"></lucide-icon>
+            {{ loading ? 'Thinking...' : label }}
+        </button>
+
+        <!-- JD Optimized Bullets (Only if JD exists and type is job) -->
+        <button *ngIf="jobDescription && type === 'job'" type="button" (click)="handleEnhance('bullets')"
+            [disabled]="loading || isTextEmpty"
+            class="flex items-center gap-1.5 text-xs font-medium text-purple-600 hover:text-purple-800 disabled:opacity-50 transition-colors"
+            title="Analyze against JD and generate optimized bullets">
+            <lucide-icon [name]="loading ? 'loader-2' : 'target'" [size]="14"
+                [class]="loading ? 'animate-spin' : ''"></lucide-icon>
+            Tailor to Job
+        </button>
+    </div>
+
+    <!-- Loading State with Tips -->
+    <div *ngIf="loading"
+        class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-md animate-in fade-in">
+        <div class="flex items-center gap-2 mb-1">
+            <lucide-icon name="loader-2" [size]="14" class="text-euro-blue animate-spin"></lucide-icon>
+            <span class="text-xs font-bold text-euro-blue">Thinking...</span>
+        </div>
+        <p class="text-xs text-slate-600 dark:text-slate-300 italic">"{{currentTip}}"</p>
+    </div>
+
+    <p *ngIf="error" class="text-xs text-red-500 mt-1">{{error}}</p>
+
+    <!-- Results Container -->
+    <div #resultsContainer>
+        <!-- Standard Suggestion View (Multiple Options) -->
+        <div *ngIf="suggestions && suggestions.length > 0"
+            class="mt-2 space-y-3 animate-in fade-in slide-in-from-top-2">
+
+            <div *ngFor="let s of suggestions; let i = index"
+                class="p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 rounded-md relative group">
+
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                        <ng-container [ngSwitch]="i">
+                            <span *ngSwitchCase="0">ATS Optimized</span>
+                            <span *ngSwitchCase="1">Professional & Concise</span>
+                            <span *ngSwitchCase="2">Engaging & Creative</span>
+                            <span *ngSwitchDefault>Suggestion</span>
+                        </ng-container>
+                    </span>
+                    <div class="flex gap-1">
+                        <button (click)="handleAcceptSuggestion(s)"
+                            class="p-1.5 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded hover:bg-green-200 dark:hover:bg-green-900 flex items-center gap-1 text-xs font-medium"
+                            title="Use this version">
+                            <lucide-icon name="check" [size]="14"></lucide-icon> Apply
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{{s}}</div>
+            </div>
+
+            <div class="flex justify-end">
+                <button (click)="handleDiscard()" class="text-xs text-red-500 hover:text-red-700 underline">Dismiss
+                    All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tailored Bullets View -->
+    <div *ngIf="bullets"
+        class="mt-2 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-md animate-in fade-in slide-in-from-top-2">
+        <div class="flex justify-between items-center mb-2">
+            <p class="text-xs font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1">
+                <lucide-icon name="target" [size]="12"></lucide-icon> Tailored Suggestions ({{bullets.length}} options)
+            </p>
+            <button (click)="handleDiscard()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <lucide-icon name="x" [size]="14"></lucide-icon>
+            </button>
+        </div>
+        <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+            <div *ngFor="let bullet of bullets; let i = index" class="flex gap-2 items-start group"
+                [class.opacity-60]="isBulletAdded(i)">
+                <button (click)="!isBulletAdded(i) && handleAddBullet(bullet, i)" [disabled]="isBulletAdded(i)"
+                    class="mt-0.5 p-1 border rounded shrink-0 transition-colors"
+                    [ngClass]="isBulletAdded(i) 
+                        ? 'bg-green-100 border-green-200 text-green-600 cursor-default dark:bg-green-900/30 dark:border-green-800 dark:text-green-400' 
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-400 hover:text-green-600 hover:border-green-500'"
+                    [title]="isBulletAdded(i) ? 'Already Added' : 'Add to list'">
+                    <lucide-icon [name]="isBulletAdded(i) ? 'check' : 'list-plus'" [size]="14"></lucide-icon>
+                </button>
+                <p class="text-sm leading-snug"
+                    [ngClass]="isBulletAdded(i) ? 'text-slate-500 dark:text-slate-500 line-through decoration-slate-300' : 'text-slate-700 dark:text-slate-300'">
+                    {{bullet}}
+                </p>
+            </div>
+        </div>
+        <div class="mt-3 text-xs text-center text-slate-400 italic">
+            Scroll for more • Sorted by relevance
+        </div>
+    </div>
+</div>

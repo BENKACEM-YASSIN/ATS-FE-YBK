@@ -1,0 +1,413 @@
+<ng-container *ngIf="data">
+  <div class="cv-page">
+    <ng-container [ngSwitch]="data.theme">
+      <!-- 1. Euro Classic -->
+      <div *ngSwitchCase="'euro-classic'"
+          class="bg-white w-full flex flex-col md:flex-row print:flex-row print-flex-container text-sm text-slate-800 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto">
+          <div class="w-full md:w-1/3 bg-slate-50 border-r border-slate-200 p-8 flex flex-col gap-6 print:w-1/3 print:bg-slate-50 print:p-10 print-content-padding">
+            <div class="mb-4">
+                <h1 class="text-2xl font-bold text-euro-blue uppercase tracking-wide break-words">
+                    {{data.personalInfo.firstName}} {{data.personalInfo.lastName}}</h1>
+                <p class="text-slate-600 font-medium mt-1">{{data.personalInfo.title}}</p>
+            </div>
+            <div class="space-y-3 text-xs">
+                <h3
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 pb-1 mb-2">
+                    Contact</h3>
+                <div class="flex flex-col gap-3">
+                    <div *ngIf="data.personalInfo.email" class="flex items-start gap-3"><lucide-icon name="mail"
+                            [size]="14" class="text-euro-blue shrink-0"></lucide-icon> <span
+                            class="break-all">{{data.personalInfo.email}}</span></div>
+                    <div *ngIf="data.personalInfo.phone" class="flex items-start gap-3"><lucide-icon name="phone"
+                            [size]="14" class="text-euro-blue shrink-0"></lucide-icon>
+                        <span>{{data.personalInfo.phone}}</span></div>
+                    <div *ngIf="data.personalInfo.address || data.personalInfo.city" class="flex items-start gap-3">
+                        <lucide-icon name="map-pin" [size]="14" class="text-euro-blue shrink-0"></lucide-icon>
+                        <span>{{data.personalInfo.address}} {{data.personalInfo.city}}
+                            {{data.personalInfo.country}}</span></div>
+                    <div *ngIf="data.personalInfo.linkedin" class="flex items-start gap-3"><lucide-icon name="linkedin"
+                            [size]="14" class="text-euro-blue shrink-0"></lucide-icon> <span
+                            class="break-all">{{data.personalInfo.linkedin}}</span></div>
+                </div>
+            </div>
+
+            <!-- Left Column Sections -->
+            <div *ngFor="let id of getLeftColumnSections()" class="mt-6">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 pb-1 mb-3 flex items-center gap-2">
+                    <ng-container [ngTemplateOutlet]="sectionIcon" [ngTemplateOutletContext]="{id: id}"></ng-container>
+                    {{getSectionTitle(id)}}
+                </h3>
+                <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{id: id}"></ng-container>
+            </div>
+        </div>
+        <div class="w-full md:w-2/3 p-8 print:w-2/3 print-content-padding">
+            <div *ngFor="let id of getRightColumnSections()" class="mb-8">
+                <h2
+                    class="flex items-center gap-2 text-sm font-bold text-euro-blue uppercase tracking-wider border-b-2 border-euro-blue/20 pb-2 mb-4">
+                    <ng-container [ngTemplateOutlet]="sectionIcon" [ngTemplateOutletContext]="{id: id}"></ng-container>
+                    {{getSectionTitle(id)}}
+                </h2>
+                <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{id: id}"></ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Modern Minimal -->
+    <div *ngSwitchCase="'modern-minimal'"
+        class="bg-white w-full p-12 text-sm text-slate-800 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto print-content-padding">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-light text-slate-900 mb-2 uppercase tracking-tight">{{data.personalInfo.firstName}}
+                <span class="font-bold">{{data.personalInfo.lastName}}</span></h1>
+            <p class="text-lg text-slate-500 mb-4">{{data.personalInfo.title}}</p>
+            <div class="flex justify-center">
+                <ng-container [ngTemplateOutlet]="contactRow"
+                    [ngTemplateOutletContext]="{info: data.personalInfo, className: 'justify-center text-slate-500'}"></ng-container>
+            </div>
+        </header>
+        <div class="max-w-2xl mx-auto space-y-10">
+            <div *ngFor="let id of data.sectionOrder">
+                <h2 class="text-lg font-medium text-slate-900 border-b border-slate-200 pb-2 mb-6 tracking-wide">
+                    {{getSectionTitle(id)}}</h2>
+                <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{id: id}"></ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Executive Dark -->
+    <div *ngSwitchCase="'executive-dark'"
+        class="bg-white w-full flex flex-col md:flex-row print:flex-row print-flex-container text-sm text-slate-800 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto">
+        <div
+            class="w-full md:w-[35%] bg-slate-900 text-slate-300 p-8 flex flex-col gap-8 print:w-[35%] print:bg-slate-900 print:text-slate-300 print:p-10 print-content-padding">
+            <div class="mt-8">
+                <h1 class="text-3xl font-bold text-white leading-tight mb-2">{{data.personalInfo.firstName}}<br /><span
+                        class="text-blue-400">{{data.personalInfo.lastName}}</span></h1>
+                <p class="text-slate-400 text-lg">{{data.personalInfo.title}}</p>
+            </div>
+            <div>
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Contact</h3>
+                <div class="space-y-3 text-sm">
+                    <div *ngIf="data.personalInfo.email" class="break-all">{{data.personalInfo.email}}</div>
+                    <div *ngIf="data.personalInfo.phone">{{data.personalInfo.phone}}</div>
+                    <div *ngIf="data.personalInfo.address || data.personalInfo.city">{{data.personalInfo.city}},
+                        {{data.personalInfo.country}}</div>
+                    <div *ngIf="data.personalInfo.linkedin" class="break-all text-blue-400">
+                        {{data.personalInfo.linkedin}}</div>
+                </div>
+            </div>
+
+            <!-- Left Column Sections -->
+            <div *ngFor="let id of getLeftColumnSections()" class="mt-8">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 border-b border-slate-800 pb-2">
+                    {{getSectionTitle(id)}}
+                </h3>
+                <div class="text-slate-400">
+                    <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{id: id}"></ng-container>
+                </div>
+            </div>
+        </div>
+        <div class="w-full md:w-[65%] p-10 print:w-[65%] print-content-padding">
+            <div *ngFor="let id of getRightColumnSections()" class="mb-10">
+                <h2 class="text-xl font-bold text-slate-900 mb-4">{{getSectionTitle(id)}}</h2>
+                <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{id: id}"></ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Corporate Gray -->
+    <div *ngSwitchCase="'corporate-gray'"
+        class="bg-white w-full p-0 text-sm text-slate-800 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto">
+        <div class="bg-slate-100 p-10 border-b border-slate-200 print:bg-slate-100 print-content-padding">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">{{data.personalInfo.firstName}}
+                {{data.personalInfo.lastName}}</h1>
+            <p class="text-lg text-slate-600 mb-4">{{data.personalInfo.title}}</p>
+            <ng-container [ngTemplateOutlet]="contactRow"
+                [ngTemplateOutletContext]="{info: data.personalInfo}"></ng-container>
+        </div>
+        <div class="p-10 grid grid-cols-1 md:grid-cols-12 gap-8 print-content-padding">
+            <div *ngFor="let id of data.sectionOrder" class="md:col-span-12">
+                <h2
+                    class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-200 pb-1">
+                    {{getSectionTitle(id)}}</h2>
+                <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{id: id}"></ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Creative Teal -->
+    <div *ngSwitchCase="'creative-teal'"
+        class="bg-white w-full p-0 text-sm text-slate-800 border-t-8 border-teal-600 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:border-t-8 print:min-h-0 print:h-auto">
+        <div class="p-10 print-content-padding">
+            <div class="flex justify-between items-end mb-12 border-b-2 border-slate-100 pb-8">
+                <div>
+                    <h1 class="text-4xl font-black text-slate-900 tracking-tighter mb-1">{{data.personalInfo.firstName}}
+                        {{data.personalInfo.lastName}}</h1>
+                    <p class="text-xl text-teal-600 font-medium">{{data.personalInfo.title}}</p>
+                </div>
+                <div class="text-right text-xs text-slate-500 space-y-1">
+                    <div *ngIf="data.personalInfo.email">{{data.personalInfo.email}}</div>
+                    <div *ngIf="data.personalInfo.phone">{{data.personalInfo.phone}}</div>
+                    <div *ngIf="data.personalInfo.city">{{data.personalInfo.city}}, {{data.personalInfo.country}}</div>
+                </div>
+            </div>
+            <div class="space-y-10">
+                <div *ngFor="let id of data.sectionOrder" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="md:col-span-1">
+                        <h2 class="text-sm font-bold text-teal-700 uppercase tracking-widest">{{getSectionTitle(id)}}
+                        </h2>
+                    </div>
+                    <div class="md:col-span-3">
+                        <ng-container [ngTemplateOutlet]="sectionContent"
+                            [ngTemplateOutletContext]="{id: id}"></ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Compact Stack -->
+    <div *ngSwitchCase="'compact-stack'"
+        class="bg-white w-full p-8 text-xs text-slate-900 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto print-content-padding">
+        <div class="border-b-4 border-indigo-600 pb-4 mb-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-2xl font-bold uppercase">{{data.personalInfo.firstName}}
+                        {{data.personalInfo.lastName}}</h1>
+                    <p class="text-indigo-700 font-bold">{{data.personalInfo.title}}</p>
+                </div>
+                <div class="text-right">
+                    <ng-container [ngTemplateOutlet]="contactRow"
+                        [ngTemplateOutletContext]="{info: data.personalInfo, className: 'flex-col items-end gap-0.5', iconColor: 'text-indigo-600'}"></ng-container>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-x-8 gap-y-6">
+            <div *ngFor="let id of data.sectionOrder"
+                [class]="id === 'workExperience' || id === 'education' ? 'col-span-2' : 'col-span-2 md:col-span-1'">
+                <h2 class="font-bold text-indigo-800 border-b border-indigo-100 mb-2 pb-1 uppercase">
+                    {{getSectionTitle(id)}}</h2>
+                <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{id: id}"></ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Serif Elegant -->
+    <div *ngSwitchCase="'serif-elegant'"
+        class="bg-white w-full p-12 text-sm text-slate-800 font-serif print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto print-content-padding">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-slate-900 mb-2 italic">{{data.personalInfo.firstName}}
+                {{data.personalInfo.lastName}}</h1>
+            <p
+                class="text-sm uppercase tracking-widest text-slate-500 mb-4 border-b border-slate-300 inline-block pb-1">
+                {{data.personalInfo.title}}</p>
+            <div class="flex justify-center gap-4 text-slate-500 text-xs font-sans">
+                <span *ngIf="data.personalInfo.email">{{data.personalInfo.email}}</span>
+                <span *ngIf="data.personalInfo.phone">• {{data.personalInfo.phone}}</span>
+                <span *ngIf="data.personalInfo.city">• {{data.personalInfo.city}}</span>
+            </div>
+        </div>
+        <div class="space-y-8">
+            <div *ngFor="let id of data.sectionOrder">
+                <div class="flex items-center gap-4 mb-4">
+                    <h2 class="text-lg font-bold text-slate-900 italic min-w-max">{{getSectionTitle(id)}}</h2>
+                    <div class="h-px bg-slate-200 w-full"></div>
+                </div>
+                <div class="font-sans">
+                    <ng-container [ngTemplateOutlet]="sectionContent"
+                        [ngTemplateOutletContext]="{id: id}"></ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Bold Header -->
+    <div *ngSwitchCase="'bold-header'"
+        class="bg-white w-full text-sm text-slate-800 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto">
+        <div class="bg-blue-900 text-white p-10 print:bg-blue-900 print:text-white print-content-padding">
+            <h1 class="text-4xl font-bold mb-2">{{data.personalInfo.firstName}} {{data.personalInfo.lastName}}</h1>
+            <p class="text-xl text-blue-200 mb-6 print:text-blue-200">{{data.personalInfo.title}}</p>
+            <div class="flex flex-wrap gap-6 text-sm text-blue-100 print:text-blue-100">
+                <div *ngIf="data.personalInfo.email" class="flex items-center gap-2"><lucide-icon name="mail"
+                        [size]="14"></lucide-icon> {{data.personalInfo.email}}</div>
+                <div *ngIf="data.personalInfo.phone" class="flex items-center gap-2"><lucide-icon name="phone"
+                        [size]="14"></lucide-icon> {{data.personalInfo.phone}}</div>
+                <div *ngIf="data.personalInfo.city" class="flex items-center gap-2"><lucide-icon name="map-pin"
+                        [size]="14"></lucide-icon> {{data.personalInfo.city}}, {{data.personalInfo.country}}</div>
+            </div>
+        </div>
+        <div class="p-10 space-y-8 print-content-padding">
+            <div *ngFor="let id of data.sectionOrder" class="relative pl-6 border-l-4 border-blue-900/10">
+                <h2 class="text-lg font-bold text-blue-900 uppercase tracking-tight mb-4">{{getSectionTitle(id)}}</h2>
+                <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{id: id}"></ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- Default (Fallback) -->
+    <div *ngSwitchDefault class="p-10 text-center">Theme not found</div>
+  </ng-container>
+</div>
+</ng-container>
+
+<!-- TEMPLATES -->
+
+<!-- Section Icon -->
+<ng-template #sectionIcon let-id="id">
+    <lucide-icon *ngIf="id === 'aboutMe'" name="user" [size]="16"></lucide-icon>
+    <lucide-icon *ngIf="id === 'workExperience'" name="briefcase" [size]="16"></lucide-icon>
+    <lucide-icon *ngIf="id === 'education'" name="graduation-cap" [size]="16"></lucide-icon>
+    <lucide-icon *ngIf="id === 'skills'" name="wrench" [size]="16"></lucide-icon>
+    <lucide-icon *ngIf="!['aboutMe','workExperience','education','skills'].includes(id)" name="star"
+        [size]="16"></lucide-icon>
+</ng-template>
+
+<!-- Contact Row -->
+<ng-template #contactRow let-info="info" let-iconColor="iconColor" let-className="className">
+    <div [class]="'flex flex-wrap gap-4 text-xs ' + (className || '')">
+        <div *ngIf="info.email" class="flex items-center gap-1"><lucide-icon name="mail" [size]="12"
+                [class]="iconColor || 'text-slate-600'"></lucide-icon> {{info.email}}</div>
+        <div *ngIf="info.phone" class="flex items-center gap-1"><lucide-icon name="phone" [size]="12"
+                [class]="iconColor || 'text-slate-600'"></lucide-icon> {{info.phone}}</div>
+        <div *ngIf="info.address || info.city" class="flex items-center gap-1"><lucide-icon name="map-pin" [size]="12"
+                [class]="iconColor || 'text-slate-600'"></lucide-icon> {{info.address ? info.address + ', ' :
+            ''}}{{info.city}} {{info.country}}</div>
+        <div *ngIf="info.website" class="flex items-center gap-1"><lucide-icon name="globe" [size]="12"
+                [class]="iconColor || 'text-slate-600'"></lucide-icon> {{info.website}}</div>
+        <div *ngIf="info.linkedin" class="flex items-center gap-1"><lucide-icon name="linkedin" [size]="12"
+                [class]="iconColor || 'text-slate-600'"></lucide-icon> {{info.linkedin}}</div>
+    </div>
+</ng-template>
+
+<!-- Section Content Logic -->
+<ng-template #sectionContent let-id="id">
+    <!-- Custom -->
+    <ng-container *ngIf="id.startsWith('custom-')">
+        <ng-container *ngIf="getCustomSection(id) as section">
+            <div *ngIf="section && section.items.length > 0" class="space-y-6">
+                <div *ngFor="let item of section.items" class="relative">
+                    <h3 class="text-base font-bold text-slate-800">{{item.title}}</h3>
+                    <div class="flex flex-wrap gap-x-2 text-sm text-slate-500 mb-2">
+                        <span *ngIf="item.subtitle" class="font-medium text-slate-700">{{item.subtitle}}</span>
+                        <span *ngIf="item.subtitle && (item.city || item.startDate)">•</span>
+                        <span>{{item.city}}{{item.country ? ', ' + item.country : ''}}</span>
+                        <span *ngIf="(item.city || item.country) && item.startDate">•</span>
+                        <span *ngIf="item.startDate" class="flex items-center gap-1">
+                            <lucide-icon name="calendar" [size]="12"></lucide-icon>
+                            {{formatDate(item.startDate)}} – {{item.current ? 'Present' : formatDate(item.endDate)}}
+                        </span>
+                    </div>
+                    <div class="text-slate-600 text-sm leading-relaxed rich-text" [innerHTML]="item.description"></div>
+                </div>
+            </div>
+        </ng-container>
+    </ng-container>
+
+    <!-- About Me -->
+    <ng-container *ngIf="id === 'aboutMe' && data.personalInfo.aboutMe">
+        <div class="text-slate-700 leading-relaxed rich-text" [innerHTML]="data.personalInfo.aboutMe"></div>
+    </ng-container>
+
+    <!-- Work Experience -->
+    <ng-container *ngIf="id === 'workExperience' && data.workExperience.length > 0">
+        <div class="space-y-6">
+            <div *ngFor="let exp of data.workExperience" class="section-item relative">
+                <h3 class="text-base font-bold text-slate-800">{{exp.title}}</h3>
+                <div class="flex flex-wrap gap-x-2 text-sm text-slate-500 mb-2">
+                    <span class="font-medium text-slate-700">{{exp.employer}}</span>
+                    <span>•</span>
+                    <span>{{exp.city}}{{exp.country ? ', ' + exp.country : ''}}</span>
+                    <span>•</span>
+                    <span class="flex items-center gap-1 print:bg-transparent print:p-0">
+                        <lucide-icon name="calendar" [size]="12"></lucide-icon>
+                        {{formatDate(exp.startDate)}} – {{exp.current ? 'Present' : formatDate(exp.endDate)}}
+                    </span>
+                </div>
+                <div class="text-slate-600 text-sm leading-relaxed rich-text" [innerHTML]="exp.description"></div>
+            </div>
+        </div>
+    </ng-container>
+
+    <!-- Education -->
+    <ng-container *ngIf="id === 'education' && data.education.length > 0">
+        <div class="space-y-6">
+            <div *ngFor="let edu of data.education" class="relative">
+                <h3 class="text-base font-bold text-slate-800">{{edu.degree}}</h3>
+                <div class="flex flex-wrap gap-x-2 text-sm text-slate-500 mb-2">
+                    <span class="font-medium text-slate-700">{{edu.school}}</span>
+                    <span>•</span>
+                    <span>{{edu.city}}{{edu.country ? ', ' + edu.country : ''}}</span>
+                    <span>•</span>
+                    <span class="flex items-center gap-1">
+                        <lucide-icon name="calendar" [size]="12"></lucide-icon>
+                        {{formatDate(edu.startDate)}} – {{edu.current ? 'Present' : formatDate(edu.endDate)}}
+                    </span>
+                </div>
+                <div class="text-slate-600 text-sm leading-relaxed rich-text" [innerHTML]="edu.description"></div>
+            </div>
+        </div>
+    </ng-container>
+
+    <!-- Skills -->
+    <ng-container *ngIf="id === 'skills'">
+        <ng-container
+            *ngIf="data.skills.motherTongue || data.skills.otherLanguages.length > 0 || data.skills.digitalSkills.length > 0 || data.skills.softSkills.length > 0">
+            <div class="space-y-6">
+                <!-- Mother Tongue -->
+                <div *ngIf="data.skills.motherTongue" class="flex flex-col gap-1">
+                    <span class="font-bold text-slate-700 text-xs uppercase tracking-wider">Mother Tongue</span>
+                    <span class="text-slate-600 uppercase">{{data.skills.motherTongue}}</span>
+                </div>
+
+                <!-- Other Languages -->
+                <div *ngIf="data.skills.otherLanguages.length > 0" class="flex flex-col gap-2">
+                    <span class="font-bold text-slate-700 text-xs uppercase tracking-wider">Other Languages</span>
+                    <ul class="space-y-1">
+                        <li *ngFor="let lang of data.skills.otherLanguages" class="text-slate-600 flex items-start gap-2">
+                            <span class="shrink-0">•</span>
+                            <div>
+                                <span class="font-semibold text-slate-800 uppercase">{{lang.language}}</span>
+                                <span class="mx-1">–</span>
+                                <ng-container *ngIf="allLevelsSame(lang); else differentLevels">
+                                    <span>{{getLanguageLevelLabel(lang.listening)}} ({{lang.listening}} level in all skills: listening, reading, speaking, writing)</span>
+                                </ng-container>
+                                <ng-template #differentLevels>
+                                    <span class="text-xs">
+                                        (listening: {{lang.listening}}, 
+                                        reading: {{lang.reading}}, 
+                                        interaction: {{lang.spokenInteraction}}, 
+                                        production: {{lang.spokenProduction}}, 
+                                        writing: {{lang.writing}})
+                                    </span>
+                                </ng-template>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Digital Skills -->
+                <div *ngIf="data.skills.digitalSkills.length > 0" class="flex flex-col gap-2">
+                    <span class="font-bold text-slate-700 text-xs uppercase tracking-wider">Digital Skills</span>
+                    <div class="space-y-3">
+                        <div *ngFor="let cat of data.skills.digitalSkills" class="flex flex-col gap-1.5">
+                            <span *ngIf="cat.name" class="font-semibold text-slate-800">{{cat.name}}:</span>
+                            <div class="flex flex-wrap gap-2">
+                                <span *ngFor="let skill of cat.skills"
+                                    class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded border border-slate-200">{{skill}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soft Skills -->
+                <div *ngIf="data.skills.softSkills.length > 0" class="flex flex-col gap-2">
+                    <span class="font-bold text-slate-700 text-xs uppercase tracking-wider">Soft Skills</span>
+                    <div class="flex flex-wrap gap-y-1 gap-x-4">
+                        <div *ngFor="let skill of data.skills.softSkills" class="flex items-center gap-2 text-slate-600">
+                            <div class="w-1 h-1 bg-slate-400 rounded-full"></div>
+                            {{skill}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </ng-container>
+</ng-template>

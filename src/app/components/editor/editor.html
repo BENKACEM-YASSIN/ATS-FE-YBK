@@ -1,0 +1,554 @@
+<div
+    class="h-full flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 overflow-y-auto no-print transition-colors duration-200 relative">
+    <!-- Header -->
+    <div
+        class="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 p-4 flex justify-between items-center shadow-sm transition-colors duration-200">
+        <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Editor
+            </h1>
+        </div>
+        <div class="flex gap-2 items-center">
+            <!-- ATS Score Button -->
+            <button  (click)="showAtsDashboard = true"
+                class="flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-bold transition-all"
+                [ngClass]="atsResult ? scoreColor(atsResult.score) : 'bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100'"
+                title="Open ATS Checklist">
+                <ng-container *ngIf="atsResult; else noResult">
+                    <span class="text-xs">ATS</span>
+                    <span>{{atsResult.score}}%</span>
+                </ng-container>
+                <ng-template #noResult>
+                    <lucide-icon name="target" [size]="14"></lucide-icon> <span>Check Score</span>
+                </ng-template>
+            </button>
+
+            <button (click)="saveHistoryVersion()"
+                class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                [title]="currentHistoryId ? 'Update CV' : 'Save as New CV'">
+                <lucide-icon [name]="currentHistoryId ? 'save' : 'plus-circle'" [size]="16"></lucide-icon>
+                <span>{{currentHistoryId ? 'Update' : 'Save'}}</span>
+            </button>
+
+            <!-- Save Profile Button -->
+            <button (click)="handleSaveProfile()" [disabled]="isSavingProfile"
+                class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors relative"
+                title="Save Profile">
+                <lucide-icon *ngIf="!isSavingProfile && !profileSaveSuccess" name="user" [size]="18"></lucide-icon>
+                <lucide-icon *ngIf="isSavingProfile" name="loader-2" [size]="18" class="animate-spin"></lucide-icon>
+                <lucide-icon *ngIf="profileSaveSuccess" name="check" [size]="18" class="text-green-500"></lucide-icon>
+            </button>
+
+            <button (click)="togglePreview.emit()"
+                class="md:hidden flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
+                <lucide-icon name="eye" [size]="16"></lucide-icon>
+            </button>
+
+            <button (click)="handleDownloadPdfDirect()"
+                class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-euro-blue rounded-md hover:bg-euro-dark shadow-sm transition-colors">
+                <lucide-icon name="download" [size]="16"></lucide-icon> <span class="hidden sm:inline">PDF</span>
+            </button>
+
+
+        </div>
+    </div>
+
+    <!-- Template Selector Banner -->
+    <div *ngIf="cvData" class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-3">
+        <button (click)="showThemeSelector = !showThemeSelector"
+            class="w-full flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-euro-blue dark:hover:text-blue-400 transition-colors">
+            <span class="flex items-center gap-2"><lucide-icon name="palette" [size]="16"></lucide-icon> Change Template
+                ({{cvData.theme || 'Default'}})</span>
+            <lucide-icon [name]="showThemeSelector ? 'chevron-up' : 'chevron-down'" [size]="16"></lucide-icon>
+        </button>
+
+        <div *ngIf="showThemeSelector"
+            class="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-3 animate-in fade-in slide-in-from-top-2">
+            <button *ngFor="let theme of THEMES" (click)="setTheme(theme.id); showThemeSelector = false;"
+                class="p-2 rounded-md border text-left text-xs font-medium flex items-center gap-2 transition-all"
+                [ngClass]="cvData.theme === theme.id ? 'border-euro-blue bg-blue-50 dark:bg-blue-900/20 text-euro-blue dark:text-blue-300 ring-1 ring-euro-blue' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'">
+                <div class="w-3 h-3 rounded-full" [ngClass]="theme.color"></div>
+                {{theme.name}}
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="cvData" class="p-6 space-y-6 pb-32">
+        <!-- Personal Info -->
+        <div
+            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm overflow-hidden transition-colors">
+            <div class="bg-slate-50 dark:bg-slate-800/80 px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center cursor-pointer select-none"
+                (click)="personalInfoExpanded = !personalInfoExpanded">
+                <h2
+                    class="text-sm font-bold text-euro-blue dark:text-blue-400 uppercase tracking-wide flex items-center gap-2">
+                    <div class="text-slate-400 hover:text-euro-blue transition-colors">
+                        <lucide-icon [name]="personalInfoExpanded ? 'chevron-up' : 'chevron-down'"
+                            [size]="16"></lucide-icon>
+                    </div>
+                    <lucide-icon name="file-text" [size]="16"></lucide-icon>
+                    Personal Information
+                </h2>
+            </div>
+
+            <div *ngIf="personalInfoExpanded"
+                class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
+                <app-input label="First Name" [value]="cvData.personalInfo.firstName"
+                    (valueChange)="updatePersonalInfo('firstName', $event)"></app-input>
+                <app-input label="Last Name" [value]="cvData.personalInfo.lastName"
+                    (valueChange)="updatePersonalInfo('lastName', $event)"></app-input>
+                <app-input label="Job Title" [value]="cvData.personalInfo.title"
+                    (valueChange)="updatePersonalInfo('title', $event)" [fullWidth]="true"></app-input>
+                <app-input label="Email" type="email" [value]="cvData.personalInfo.email"
+                    (valueChange)="updatePersonalInfo('email', $event)"></app-input>
+                <app-input label="Phone" type="tel" [value]="cvData.personalInfo.phone"
+                    (valueChange)="updatePersonalInfo('phone', $event)"></app-input>
+                <app-input label="Address" [value]="cvData.personalInfo.address"
+                    (valueChange)="updatePersonalInfo('address', $event)" [fullWidth]="true"></app-input>
+                <div class="grid grid-cols-2 gap-2">
+                    <app-input label="Postal Code" [value]="cvData.personalInfo.postalCode"
+                        (valueChange)="updatePersonalInfo('postalCode', $event)"></app-input>
+                    <app-input label="City" [value]="cvData.personalInfo.city"
+                        (valueChange)="updatePersonalInfo('city', $event)"></app-input>
+                </div>
+                <app-input label="Country" [value]="cvData.personalInfo.country"
+                    (valueChange)="updatePersonalInfo('country', $event)"></app-input>
+                <app-input label="Website" [value]="cvData.personalInfo.website"
+                    (valueChange)="updatePersonalInfo('website', $event)"></app-input>
+                <app-input label="LinkedIn" [value]="cvData.personalInfo.linkedin"
+                    (valueChange)="updatePersonalInfo('linkedin', $event)"></app-input>
+            </div>
+        </div>
+
+        <!-- Dynamic Sections -->
+        <ng-container *ngFor="let sectionId of cvData.sectionOrder; let i = index; let first = first; let last = last">
+            <!-- About Me -->
+            <app-section-wrapper *ngIf="sectionId === 'aboutMe'" [title]="getSectionTitle('aboutMe')"
+                [enableCustomTitle]="true" (titleChange)="updateSectionTitle('aboutMe', $event)"
+                [column]="getSectionColumn('aboutMe')" (columnChange)="updateSectionColumn('aboutMe', $event)"
+                [isFirst]="first" [isLast]="last" class="block mb-6" (moveUp)="moveSection(i, 'up')"
+                (moveDown)="moveSection(i, 'down')" (remove)="removeSection(sectionId)">
+                <app-rich-text-editor [value]="cvData.personalInfo.aboutMe"
+                    (valueChange)="updatePersonalInfo('aboutMe', $event)"
+                    placeholder="Brief summary of your professional background..."></app-rich-text-editor>
+                <app-ai-assistant [currentText]="cvData.personalInfo.aboutMe"
+                    (apply)="updatePersonalInfo('aboutMe', $event)" type="summary"
+                    [jobDescription]="jobDescription"></app-ai-assistant>
+            </app-section-wrapper>
+
+            <!-- Work Experience -->
+            <app-section-wrapper *ngIf="sectionId === 'workExperience'" [title]="getSectionTitle('workExperience')"
+                [enableCustomTitle]="true" (titleChange)="updateSectionTitle('workExperience', $event)"
+                [column]="getSectionColumn('workExperience')"
+                (columnChange)="updateSectionColumn('workExperience', $event)" [isFirst]="first" class="block mb-6"
+                [isLast]="last" (moveUp)="moveSection(i, 'up')" (moveDown)="moveSection(i, 'down')"
+                (remove)="removeSection(sectionId)">
+                <div class="space-y-4">
+                    <div *ngFor="let exp of cvData.workExperience; trackBy: trackById"
+                        class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700 relative group transition-colors">
+                        <button (click)="removeWorkExperience(exp.id)"
+                            class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors">
+                            <lucide-icon name="trash-2" [size]="16"></lucide-icon>
+                        </button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+                            <app-input label="Occupation" [value]="exp.title"
+                                (valueChange)="updateWorkExperience(exp.id, 'title', $event)"
+                                [fullWidth]="true"></app-input>
+                            <app-input label="Employer" [value]="exp.employer"
+                                (valueChange)="updateWorkExperience(exp.id, 'employer', $event)"></app-input>
+                            <app-input label="City" [value]="exp.city"
+                                (valueChange)="updateWorkExperience(exp.id, 'city', $event)"></app-input>
+                            <div class="grid grid-cols-2 gap-2">
+                                <app-input label="Start Date" type="date" [value]="exp.startDate"
+                                    (valueChange)="updateWorkExperience(exp.id, 'startDate', $event)"></app-input>
+                                <div *ngIf="!exp.current; else presentBlock">
+                                    <app-input label="End Date" type="date" [value]="exp.endDate"
+                                        (valueChange)="updateWorkExperience(exp.id, 'endDate', $event)"></app-input>
+                                </div>
+                                <ng-template #presentBlock>
+                                    <div
+                                        class="flex items-center h-full pt-6 text-sm text-green-600 dark:text-green-400 font-medium">
+                                        Present</div>
+                                </ng-template>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <input type="checkbox" [checked]="exp.current"
+                                    (change)="updateWorkExperience(exp.id, 'current', $any($event.target).checked)"
+                                    class="rounded text-euro-blue" />
+                                <label class="text-sm text-slate-600 dark:text-slate-400">Ongoing</label>
+                            </div>
+                            <div class="col-span-full">
+                                <label
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Responsibilities</label>
+                                <app-rich-text-editor [value]="exp.description"
+                                    (valueChange)="updateWorkExperience(exp.id, 'description', $event)"
+                                    placeholder="Describe your key responsibilities..."></app-rich-text-editor>
+                                <app-ai-assistant [currentText]="exp.description || exp.title"
+                                    (apply)="updateWorkExperience(exp.id, 'description', $event)" type="job"
+                                    label="AI Enhance" [jobDescription]="jobDescription"></app-ai-assistant>
+                            </div>
+                        </div>
+                    </div>
+                    <button (click)="addWorkExperience()"
+                        class="w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-500 hover:border-euro-blue hover:text-euro-blue flex justify-center items-center gap-2 transition-colors">
+                        <lucide-icon name="plus" [size]="16"></lucide-icon> Add Position
+                    </button>
+                </div>
+            </app-section-wrapper>
+
+            <!-- Education -->
+            <app-section-wrapper *ngIf="sectionId === 'education'" [title]="getSectionTitle('education')"
+                [enableCustomTitle]="true" (titleChange)="updateSectionTitle('education', $event)"
+                [column]="getSectionColumn('education')" (columnChange)="updateSectionColumn('education', $event)"
+                [isFirst]="first" class="block mb-6" [isLast]="last" (moveUp)="moveSection(i, 'up')"
+                (moveDown)="moveSection(i, 'down')" (remove)="removeSection(sectionId)">
+                <div class="space-y-4">
+                    <div *ngFor="let edu of cvData.education; trackBy: trackById"
+                        class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700 relative transition-colors">
+                        <button (click)="removeEducation(edu.id)"
+                            class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors">
+                            <lucide-icon name="trash-2" [size]="16"></lucide-icon>
+                        </button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+                            <app-input label="Qualification" [value]="edu.degree"
+                                (valueChange)="updateEducation(edu.id, 'degree', $event)"
+                                [fullWidth]="true"></app-input>
+                            <app-input label="Organization" [value]="edu.school"
+                                (valueChange)="updateEducation(edu.id, 'school', $event)"></app-input>
+                            <app-input label="City" [value]="edu.city"
+                                (valueChange)="updateEducation(edu.id, 'city', $event)"></app-input>
+                            <div class="grid grid-cols-2 gap-2">
+                                <app-input label="Start Date" type="date" [value]="edu.startDate"
+                                    (valueChange)="updateEducation(edu.id, 'startDate', $event)"></app-input>
+                                <div *ngIf="!edu.current; else presentBlock">
+                                    <app-input label="End Date" type="date" [value]="edu.endDate"
+                                        (valueChange)="updateEducation(edu.id, 'endDate', $event)"></app-input>
+                                </div>
+                                <ng-template #presentBlock>
+                                    <div
+                                        class="flex items-center h-full pt-6 text-sm text-green-600 dark:text-green-400 font-medium">
+                                        Present</div>
+                                </ng-template>
+                            </div>
+                            <div class="col-span-full">
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Details
+                                    (Optional)</label>
+                                <app-rich-text-editor [value]="edu.description"
+                                    (valueChange)="updateEducation(edu.id, 'description', $event)"
+                                    placeholder="Details about your degree..."></app-rich-text-editor>
+                            </div>
+                        </div>
+                    </div>
+                    <button (click)="addEducation()"
+                        class="w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-500 hover:border-euro-blue hover:text-euro-blue flex justify-center items-center gap-2 transition-colors">
+                        <lucide-icon name="plus" [size]="16"></lucide-icon> Add Education
+                    </button>
+                </div>
+            </app-section-wrapper>
+
+            <!-- Skills -->
+            <app-section-wrapper *ngIf="sectionId === 'skills'" [title]="getSectionTitle('skills')"
+                [enableCustomTitle]="true" (titleChange)="updateSectionTitle('skills', $event)"
+                [column]="getSectionColumn('skills')" (columnChange)="updateSectionColumn('skills', $event)"
+                [isFirst]="first" class="block mb-6" [isLast]="last" (moveUp)="moveSection(i, 'up')"
+                (moveDown)="moveSection(i, 'down')" (remove)="removeSection(sectionId)">
+                <div class="space-y-6">
+                    <app-input label="Mother Tongue(s)" [value]="cvData.skills.motherTongue"
+                        (valueChange)="setMotherTongue($event)" [fullWidth]="true"></app-input>
+
+                    <!-- Other Languages -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Other
+                                Languages</label>
+                            <button (click)="addLanguage()"
+                                class="text-xs flex items-center gap-1 text-euro-blue hover:underline">
+                                <lucide-icon name="plus" [size]="14"></lucide-icon> Add
+                            </button>
+                        </div>
+                        <div *ngFor="let lang of cvData.skills.otherLanguages; trackBy: trackById"
+                            class="p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-md relative transition-colors">
+                            <button (click)="removeLanguage(lang.id)"
+                                class="absolute top-2 right-2 text-slate-400 hover:text-red-500">
+                                <lucide-icon name="trash-2" [size]="14"></lucide-icon>
+                            </button>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pr-6">
+                                <app-input label="Language" [value]="lang.language"
+                                    (valueChange)="updateLanguage(lang.id, 'language', $event)"></app-input>
+                                <div class="col-span-2 grid grid-cols-5 gap-1">
+                                    <app-select-level label="List." [value]="lang.listening"
+                                        (valueChange)="updateLanguage(lang.id, 'listening', $event)"></app-select-level>
+                                    <app-select-level label="Read" [value]="lang.reading"
+                                        (valueChange)="updateLanguage(lang.id, 'reading', $event)"></app-select-level>
+                                    <app-select-level label="Int." [value]="lang.spokenInteraction"
+                                        (valueChange)="updateLanguage(lang.id, 'spokenInteraction', $event)"></app-select-level>
+                                    <app-select-level label="Prod." [value]="lang.spokenProduction"
+                                        (valueChange)="updateLanguage(lang.id, 'spokenProduction', $event)"></app-select-level>
+                                    <app-select-level label="Writ." [value]="lang.writing"
+                                        (valueChange)="updateLanguage(lang.id, 'writing', $event)"></app-select-level>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Digital Skills -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Digital
+                                Skills</label>
+                            <button (click)="addDigitalSkillCategory()"
+                                class="text-xs flex items-center gap-1 text-euro-blue hover:underline">
+                                <lucide-icon name="plus" [size]="14"></lucide-icon> Add Category
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            <div *ngFor="let category of cvData.skills.digitalSkills; trackBy: trackById"
+                                class="p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-md relative transition-colors">
+                                <button *ngIf="cvData.skills.digitalSkills.length > 1"
+                                    (click)="removeDigitalSkillCategory(category.id)"
+                                    class="absolute top-2 right-2 text-slate-400 hover:text-red-500">
+                                    <lucide-icon name="trash-2" [size]="14"></lucide-icon>
+                                </button>
+                                <div class="space-y-2 pr-6">
+                                    <input type="text"
+                                        class="w-full text-sm font-medium bg-transparent border-b border-transparent hover:border-slate-300 focus:border-euro-blue focus:outline-none placeholder-slate-400 text-slate-800 dark:text-slate-200"
+                                        [placeholder]="cvData.skills.digitalSkills.length > 1 ? 'Category Name (e.g. Frontend)' : 'Category Name (Optional)'"
+                                        [value]="category.name"
+                                        (input)="updateDigitalSkillCategory(category.id, 'name', $any($event.target).value)" />
+                                    <textarea
+                                        class="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-euro-blue bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm"
+                                        [value]="category.skills.join(', ')"
+                                        (input)="updateDigitalSkills(category.id, $any($event.target).value)"
+                                        placeholder="Skills (Comma separated, e.g. React, Excel, Python)"
+                                        rows="2"></textarea>
+                                </div>
+                            </div>
+                            <button *ngIf="cvData.skills.digitalSkills.length === 0" (click)="addDigitalSkillCategory()"
+                                class="w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-500 text-sm hover:border-euro-blue hover:text-euro-blue flex justify-center items-center gap-2">
+                                <lucide-icon name="plus" [size]="14"></lucide-icon> Add Digital Skills
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Soft Skills -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Communication &
+                            Soft Skills</label>
+                        <textarea
+                            class="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-euro-blue bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm"
+                            [value]="cvData.skills.softSkills.join(', ')"
+                            (input)="setSoftSkills($any($event.target).value)" placeholder="Comma separated"></textarea>
+                    </div>
+                </div>
+            </app-section-wrapper>
+
+            <!-- Custom Sections -->
+            <ng-container *ngIf="sectionId.startsWith('custom-')">
+                <ng-container *ngFor="let customSection of cvData.customSections; trackBy: trackById">
+                    <app-section-wrapper *ngIf="customSection.id === sectionId" [title]="customSection.title"
+                        [enableCustomTitle]="true" (titleChange)="updateCustomSectionTitle(sectionId, $event)"
+                        [column]="getSectionColumn(sectionId)" (columnChange)="updateSectionColumn(sectionId, $event)"
+                        class="block mb-6" [isFirst]="first" [isLast]="last" (moveUp)="moveSection(i, 'up')"
+                        (moveDown)="moveSection(i, 'down')" (remove)="removeSection(sectionId)">
+                        <div class="space-y-4">
+                            <div *ngFor="let item of customSection.items; trackBy: trackById"
+                                class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700 relative group transition-colors">
+                                <button (click)="removeCustomItem(sectionId, item.id)"
+                                    class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors">
+                                    <lucide-icon name="trash-2" [size]="16"></lucide-icon>
+                                </button>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+                                    <app-input label="Title / Role" [value]="item.title"
+                                        (valueChange)="updateCustomItem(sectionId, item.id, 'title', $event)"
+                                        [fullWidth]="true"></app-input>
+                                    <app-input label="Subtitle / Organization" [value]="item.subtitle"
+                                        (valueChange)="updateCustomItem(sectionId, item.id, 'subtitle', $event)"></app-input>
+                                    <app-input label="City / Location" [value]="item.city"
+                                        (valueChange)="updateCustomItem(sectionId, item.id, 'city', $event)"></app-input>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <app-input label="Start Date" type="date" [value]="item.startDate"
+                                            (valueChange)="updateCustomItem(sectionId, item.id, 'startDate', $event)"></app-input>
+                                        <div *ngIf="!item.current; else presentBlock">
+                                            <app-input label="End Date" type="date" [value]="item.endDate"
+                                                (valueChange)="updateCustomItem(sectionId, item.id, 'endDate', $event)"></app-input>
+                                        </div>
+                                        <ng-template #presentBlock>
+                                            <div
+                                                class="flex items-center h-full pt-6 text-sm text-green-600 dark:text-green-400 font-medium">
+                                                Present</div>
+                                        </ng-template>
+                                    </div>
+                                    <div class="col-span-full">
+                                        <label
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+                                        <app-rich-text-editor [value]="item.description"
+                                            (valueChange)="updateCustomItem(sectionId, item.id, 'description', $event)"
+                                            placeholder="Description..."></app-rich-text-editor>
+                                    </div>
+                                </div>
+                            </div>
+                            <button (click)="addCustomItem(sectionId)"
+                                class="w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-slate-500 hover:border-euro-blue hover:text-euro-blue flex justify-center items-center gap-2 transition-colors">
+                                <lucide-icon name="plus" [size]="16"></lucide-icon> Add Entry
+                            </button>
+                        </div>
+                    </app-section-wrapper>
+                </ng-container>
+            </ng-container>
+
+        </ng-container>
+
+        <!-- Add Section Button Area -->
+        <div class="relative">
+            <button *ngIf="!showAddSectionMenu; else addSectionMenu" (click)="showAddSectionMenu = true"
+                class="w-full py-3 bg-euro-blue/5 border border-euro-blue border-dashed rounded-lg text-euro-blue font-semibold hover:bg-euro-blue/10 transition-colors flex justify-center items-center gap-2">
+                <lucide-icon name="plus" [size]="20"></lucide-icon> Add New Section
+            </button>
+            <ng-template #addSectionMenu>
+                <div
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-4 animate-in fade-in zoom-in-95 duration-200">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Select a section to add</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <button *ngFor="let s of availableStandardSections" (click)="addSection(s.id)"
+                            class="text-left px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-euro-blue hover:text-white dark:hover:bg-euro-blue rounded-md transition-colors text-sm font-medium">
+                            {{s.label}}
+                        </button>
+                        <button (click)="addSection('custom')"
+                            class="text-left px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-euro-blue hover:text-white dark:hover:bg-euro-blue rounded-md transition-colors text-sm font-medium border border-dashed border-slate-300 dark:border-slate-600">
+                            + Custom Section
+                        </button>
+                    </div>
+                    <button (click)="showAddSectionMenu = false"
+                        class="mt-4 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 underline">Cancel</button>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+
+    <!-- ATS Dashboard Slide-over (Fixed to viewport) -->
+    <div *ngIf="showAtsDashboard" class="fixed inset-0 z-50 pointer-events-none">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm pointer-events-auto"
+             (click)="showAtsDashboard = false"></div>
+        
+        <!-- Panel -->
+        <div class="absolute inset-y-0 right-0 w-full md:w-[400px] bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-700 
+                    flex flex-col pointer-events-auto
+                    animate-in slide-in-from-right duration-300">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800">
+                <h2 class="font-bold text-lg text-slate-800 dark:text-white flex items-center gap-2">
+                    <lucide-icon name="target" class="text-purple-600"></lucide-icon> ATS Dashboard
+                </h2>
+                <button (click)="showAtsDashboard = false"
+                    class="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white">
+                    <lucide-icon name="x" [size]="20"></lucide-icon>
+                </button>
+            </div>
+
+            <!-- Content (scrollable) -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-6">
+                <div *ngIf="!jobDescription; else analyzeBlock"
+                    class="text-center p-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
+                    <lucide-icon name="alert-triangle" class="mx-auto text-orange-500 mb-2" [size]="32"></lucide-icon>
+                    <h3 class="font-bold text-slate-700 dark:text-slate-200 mb-2">No Job Description</h3>
+                    <p class="text-sm text-slate-500 mb-4">Add a job description to get scoring and tailored
+                        suggestions.</p>
+                    <textarea placeholder="Paste job description here..."
+                        class="w-full p-2 text-sm border rounded-md mb-2 dark:bg-slate-900 dark:border-slate-600 dark:text-white"
+                        [value]="jobDescription" (input)="jobDescriptionChange.emit($any($event.target).value)"
+                        rows="4"></textarea>
+                    <button (click)="handleReAnalyze()" [disabled]="!jobDescription"
+                        class="px-4 py-2 bg-purple-600 text-white rounded text-sm font-medium hover:bg-purple-700 disabled:opacity-50">
+                        Analyze Now
+                    </button>
+                </div>
+
+                <ng-template #analyzeBlock>
+                    <!-- Score Card -->
+                    <div
+                        class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 text-center shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Current Score</h3>
+                            <button (click)="handleReAnalyze()" [disabled]="isAnalyzing"
+                                class="text-xs flex items-center gap-1 text-euro-blue hover:underline disabled:opacity-50">
+                                <lucide-icon name="refresh-cw" [size]="12"
+                                    [class]="isAnalyzing ? 'animate-spin' : ''"></lucide-icon> Re-Analyze
+                            </button>
+                        </div>
+                        <div *ngIf="atsResult; else noAnalysis" class="relative flex justify-center mb-4">
+                            <div class="w-24 h-24 rounded-full border-[6px] flex items-center justify-center bg-transparent"
+                                [ngClass]="scoreColor(atsResult.score)">
+                                <span class="text-3xl font-bold">{{atsResult.score}}</span>
+                            </div>
+                        </div>
+                        <ng-template #noAnalysis>
+                            <div class="text-slate-400 py-4">No analysis yet</div>
+                        </ng-template>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 italic">
+                            {{atsResult?.matchReasoning || "Click re-analyze to check your progress."}}
+                        </p>
+                    </div>
+
+                    <!-- Checklist -->
+                    <div *ngIf="atsResult" class="space-y-4">
+                        <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <lucide-icon name="check-square" [size]="18" class="text-euro-blue"></lucide-icon> Action
+                            Plan
+                        </h3>
+
+                        <!-- Missing Keywords -->
+                        <div *ngIf="atsResult.missingKeywords.length > 0"
+                            class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-100 dark:border-orange-900/50">
+                            <h4
+                                class="text-xs font-bold text-orange-800 dark:text-orange-300 uppercase tracking-wide mb-2 flex items-center gap-1">
+                                <lucide-icon name="alert-triangle" [size]="12"></lucide-icon> Missing Keywords
+                            </h4>
+                            <div class="space-y-2">
+                                <label *ngFor="let kw of atsResult.missingKeywords"
+                                    class="flex items-start gap-2 cursor-pointer group"
+                                    [class.opacity-50]="isChecked('kw-'+kw)">
+                                    <div class="relative flex items-center">
+                                        <input type="checkbox" [checked]="isChecked('kw-'+kw)"
+                                            (change)="toggleCheckItem('kw-'+kw)"
+                                            class="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 dark:bg-slate-800 dark:border-slate-600" />
+                                    </div>
+                                    <span class="text-sm"
+                                        [ngClass]="isChecked('kw-'+kw) ? 'line-through text-slate-500' : 'text-slate-700 dark:text-slate-200'">{{kw}}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Suggestions -->
+                        <div *ngIf="atsResult.suggestions.length > 0"
+                            class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-900/50">
+                            <h4
+                                class="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wide mb-2 flex items-center gap-1">
+                                <lucide-icon name="sparkles" [size]="12"></lucide-icon> Optimization Steps
+                            </h4>
+                            <div class="space-y-3">
+                                <label *ngFor="let suggestion of atsResult.suggestions; let idx = index"
+                                    class="flex items-start gap-2 cursor-pointer"
+                                    [class.opacity-50]="isChecked('sug-'+idx)">
+                                    <div class="relative flex items-center mt-0.5">
+                                        <input type="checkbox" [checked]="isChecked('sug-'+idx)"
+                                            (change)="toggleCheckItem('sug-'+idx)"
+                                            class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-600" />
+                                    </div>
+                                    <span class="text-sm leading-snug"
+                                        [ngClass]="isChecked('sug-'+idx) ? 'line-through text-slate-500' : 'text-slate-700 dark:text-slate-200'">{{suggestion}}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div *ngIf="atsResult.missingKeywords.length === 0 && atsResult.suggestions.length === 0"
+                            class="text-center py-4 text-green-600 dark:text-green-400">
+                            <lucide-icon name="check-circle" class="mx-auto mb-2" [size]="32"></lucide-icon>
+                            <p class="font-bold">Great job!</p>
+                            <p class="text-sm">No major issues detected.</p>
+                        </div>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+    </div>
+</div>

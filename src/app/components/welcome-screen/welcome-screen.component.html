@@ -1,0 +1,274 @@
+<div class="min-h-full bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 lg:p-12">
+    <!-- 1. Initial Screen -->
+    <div *ngIf="screenState === 'initial'" class="max-w-5xl w-full animate-in fade-in duration-700">
+        <!-- Hero Section -->
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center justify-center p-4 bg-euro-blue/10 rounded-2xl mb-8">
+                <lucide-icon name="sparkles" class="text-euro-blue" [size]="48"></lucide-icon>
+            </div>
+            <h1 class="text-5xl lg:text-6xl font-black text-slate-900 dark:text-white mb-6 tracking-tight">
+                Your Career, <span class="text-euro-blue">Optimized.</span>
+            </h1>
+            <p class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                Create professional, ATS-friendly Europass CVs in minutes with AI-powered suggestions.
+            </p>
+        </div>
+
+        <!-- Action Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Start Fresh -->
+            <div (click)="onStartScratchClick()"
+                class="group bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-euro-blue dark:hover:border-euro-blue transition-all shadow-sm hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
+                <div class="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center text-euro-blue mb-6 group-hover:scale-110 transition-transform">
+                    <lucide-icon name="plus" [size]="28"></lucide-icon>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3">New CV</h3>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                    Start from a blank template and build your professional profile from scratch.
+                </p>
+                <div class="flex items-center text-euro-blue font-bold gap-2 group-hover:gap-4 transition-all">
+                    <span>Get Started</span>
+                    <lucide-icon name="arrow-right" [size]="18"></lucide-icon>
+                </div>
+            </div>
+
+            <!-- Import PDF -->
+            <div class="group bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-purple-500 dark:hover:border-purple-500 transition-all shadow-sm hover:shadow-2xl hover:-translate-y-1 relative cursor-pointer overflow-hidden">
+                <input type="file" accept=".pdf" (change)="handlePdfUpload($event)"
+                    class="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                <div class="w-14 h-14 bg-purple-50 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform">
+                    <lucide-icon name="upload" [size]="28"></lucide-icon>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3">Import PDF</h3>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                    Upload your existing CV to automatically extract data and improve it.
+                </p>
+                <div class="flex items-center text-purple-600 font-bold gap-2 group-hover:gap-4 transition-all">
+                    <span>Upload File</span>
+                    <lucide-icon name="arrow-right" [size]="18"></lucide-icon>
+                </div>
+            </div>
+
+            <!-- AI Magic -->
+            <div (click)="activeTab = 'ai-paste'"
+                class="group bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-500 transition-all shadow-sm hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
+                <div class="w-14 h-14 bg-amber-50 dark:bg-amber-900/20 rounded-2xl flex items-center justify-center text-amber-500 mb-6 group-hover:scale-110 transition-transform">
+                    <lucide-icon name="sparkles" [size]="28"></lucide-icon>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3">AI Import</h3>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                    Paste your raw experience or LinkedIn profile text and let AI organize it.
+                </p>
+                <div class="flex items-center text-amber-500 font-bold gap-2 group-hover:gap-4 transition-all">
+                    <span>Paste Text</span>
+                    <lucide-icon name="arrow-right" [size]="18"></lucide-icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Actions -->
+        <div class="mt-12 flex flex-wrap justify-center gap-6">
+            <div class="relative overflow-hidden group cursor-pointer">
+                <input type="file" accept=".json" (change)="handleJsonUpload($event)"
+                    class="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                <button
+                    class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm font-medium">
+                    <lucide-icon name="file-json" [size]="16"></lucide-icon> 
+                    <span>Restore from Backup</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Job Description Input Screen -->
+    <div *ngIf="screenState === 'input_jd'" class="max-w-3xl w-full animate-in zoom-in-95 duration-300">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-8 lg:p-12">
+            <div class="flex items-center gap-4 mb-8">
+                <button (click)="resetScreen()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <lucide-icon name="arrow-left" class="text-slate-400"></lucide-icon>
+                </button>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Target Job</h2>
+                    <p class="text-slate-500 dark:text-slate-400">Paste the job description to optimize your CV for it.</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="relative">
+                    <textarea [(ngModel)]="jobDescription"
+                        class="w-full h-64 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-euro-blue focus:border-transparent outline-none resize-none text-base transition-all"
+                        placeholder="Paste the job description here..."></textarea>
+                    <div *ngIf="!jobDescription" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                        <lucide-icon name="briefcase" [size]="120"></lucide-icon>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button (click)="handleGenerateCV()"
+                        class="flex-1 px-8 py-4 border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
+                        <span>Skip Optimization</span>
+                        <lucide-icon name="skip-forward" [size]="18"></lucide-icon>
+                    </button>
+                    <button (click)="handleAnalyzeATS()" [disabled]="!jobDescription.trim()"
+                        class="flex-[2] px-8 py-4 bg-euro-blue hover:bg-euro-dark disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold shadow-lg hover:shadow-blue-500/25 transition-all flex items-center justify-center gap-3">
+                        <lucide-icon name="activity" [size]="20"></lucide-icon>
+                        <span>Analyze & Optimize with AI</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ATS Analysis Result Screen -->
+    <div *ngIf="screenState === 'ats_result' && atsResult" class="max-w-4xl w-full animate-in zoom-in-95 duration-300">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <!-- Header -->
+            <div class="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-4">
+                    <button (click)="screenState = 'input_jd'" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+                        <lucide-icon name="arrow-left" class="text-slate-500"></lucide-icon>
+                    </button>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">ATS Analysis Result</h2>
+                        <p class="text-slate-500 text-sm">How well your profile matches the job requirements.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Match Score</p>
+                        <p class="text-3xl font-black text-euro-blue">{{atsResult.score}}<span class="text-lg text-slate-400 font-medium">/100</span></p>
+                    </div>
+                    <div class="relative w-24 h-24 flex items-center justify-center">
+                        <!-- Progress Ring Background -->
+                        <svg class="absolute inset-0 w-full h-full -rotate-90">
+                            <circle cx="48" cy="48" r="40" stroke="currentColor" stroke-width="8" fill="transparent"
+                                class="text-slate-100 dark:text-slate-800" />
+                            <circle cx="48" cy="48" r="40" stroke="currentColor" stroke-width="8" fill="transparent"
+                                [attr.stroke-dasharray]="2 * 3.14 * 40"
+                                [attr.stroke-dashoffset]="(2 * 3.14 * 40) * (1 - atsResult.score / 100)"
+                                [ngClass]="getScoreProgressColor(atsResult.score)"
+                                class="transition-all duration-1000 ease-out" />
+                        </svg>
+                        <span class="text-2xl font-black" [ngClass]="getScoreTextColor(atsResult.score)">{{atsResult.score}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-8 space-y-8">
+                <!-- Match Reasoning -->
+                <div *ngIf="atsResult.matchReasoning" class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-2 text-slate-500 mb-2">
+                        <lucide-icon name="info" [size]="16"></lucide-icon>
+                        <h5 class="text-xs font-bold uppercase tracking-wider">Analysis Summary</h5>
+                    </div>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                        "{{atsResult.matchReasoning}}"
+                    </p>
+                </div>
+
+                <!-- Top Suggestions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-6 bg-green-50 dark:bg-green-900/10 rounded-2xl border border-green-100 dark:border-green-900/20">
+                        <div class="flex items-center gap-2 text-green-600 mb-4">
+                            <lucide-icon name="check-circle" [size]="20"></lucide-icon>
+                            <h4 class="font-bold">Key Strengths</h4>
+                        </div>
+                        <ul class="space-y-3">
+                            <li *ngFor="let s of atsResult.suggestions" class="text-sm text-slate-700 dark:text-slate-300 flex gap-3">
+                                <div class="mt-1 w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></div>
+                                {{s}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/20">
+                        <div class="flex items-center gap-2 text-amber-600 mb-4">
+                            <lucide-icon name="alert-triangle" [size]="20"></lucide-icon>
+                            <h4 class="font-bold">Optimization Areas</h4>
+                        </div>
+                        <div *ngIf="atsResult.missingKeywords && atsResult.missingKeywords.length > 0; else noGaps">
+                            <p class="text-xs font-semibold text-amber-700 dark:text-amber-500 mb-3 uppercase tracking-tight">Missing Keywords / Skills:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span *ngFor="let kw of atsResult.missingKeywords" 
+                                    class="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-medium border border-amber-200/50 dark:border-amber-900/50">
+                                    {{kw}}
+                                </span>
+                            </div>
+                        </div>
+                        <ng-template #noGaps>
+                            <p class="text-sm text-slate-500 italic">No significant keyword gaps identified.</p>
+                        </ng-template>
+                    </div>
+                </div>
+
+                <!-- Footer Action -->
+                <div class="flex flex-col items-center gap-4 pt-4">
+                    <p class="text-sm text-slate-500 text-center max-w-lg">
+                        Our AI will now automatically rewrite your CV content to highlight these strengths and bridge the gaps identified.
+                    </p>
+                    <button (click)="handleGenerateCV()"
+                        class="w-full sm:w-auto px-12 py-4 bg-euro-blue hover:bg-euro-dark text-white rounded-2xl font-bold shadow-xl hover:shadow-blue-500/25 transition-all flex items-center justify-center gap-3 group">
+                        <span>Optimize & Generate My CV</span>
+                        <lucide-icon name="sparkles" class="group-hover:rotate-12 transition-transform"></lucide-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals / Overlays -->
+    
+    <!-- Loading Overlay -->
+    <div *ngIf="isLoading"
+        class="fixed inset-0 bg-white/90 dark:bg-slate-950/90 z-[100] flex flex-col items-center justify-center backdrop-blur-md">
+        <div class="relative">
+            <div class="w-24 h-24 border-4 border-euro-blue/20 border-t-euro-blue rounded-full animate-spin mb-8"></div>
+            <lucide-icon name="loader-2" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-euro-blue animate-pulse" [size]="32"></lucide-icon>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">{{loadingStep}}</h3>
+        <p class="text-slate-500 dark:text-slate-400 mb-8">Optimizing your professional presence...</p>
+        
+        <div class="px-8 py-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full text-center shadow-xl">
+            <p class="text-xs font-black text-euro-blue uppercase tracking-widest mb-3">Career Tip</p>
+            <p class="text-slate-700 dark:text-slate-300 italic text-lg leading-relaxed">"{{currentTip}}"</p>
+        </div>
+    </div>
+
+    <!-- Paste Text Modal -->
+    <div *ngIf="activeTab === 'ai-paste'"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div class="max-w-2xl w-full bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-8 animate-in zoom-in-95 duration-300">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                    <div class="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-amber-500">
+                        <lucide-icon name="sparkles"></lucide-icon>
+                    </div>
+                    AI Import
+                </h2>
+                <button (click)="activeTab = 'options'" class="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <lucide-icon name="x"></lucide-icon>
+                </button>
+            </div>
+            
+            <p class="text-slate-600 dark:text-slate-400 mb-6">
+                Paste your existing CV text, LinkedIn profile, or just a summary of your experience. Our AI will structure it into a perfect Europass format.
+            </p>
+
+            <textarea [(ngModel)]="pastedText"
+                class="w-full h-80 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-euro-blue focus:border-transparent outline-none resize-none text-base mb-6 transition-all"
+                placeholder="Paste your content here..."></textarea>
+            
+            <div class="flex gap-4 justify-end">
+                <button (click)="activeTab = 'options'"
+                    class="px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-sm font-bold transition-colors">
+                    Cancel
+                </button>
+                <button (click)="handleManualPasteNext(); activeTab = 'options'" [disabled]="!pastedText.trim()"
+                    class="px-10 py-3 bg-euro-blue hover:bg-euro-dark disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-blue-500/25 transition-all">
+                    Process with AI
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

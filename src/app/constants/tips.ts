@@ -1,0 +1,16 @@
+export const LOADING_TIPS = [
+    "Did you know? Recruiters spend an average of 7 seconds scanning a CV.",
+    "Tip: Use action verbs like 'Led', 'Developed', and 'Achieved' to start your bullet points.",
+    "Advice: Tailor your CV for every job application to pass ATS filters.",
+    "Fact: A professional summary should be no longer than 3-4 lines.",
+    "Tip: Quantify your achievements with numbers (e.g., 'Increased sales by 20%').",
+    "Advice: Check for spelling and grammar errors; they can be a deal-breaker.",
+    "Tip: Focus on results, not just responsibilities.",
+    "Fact: Soft skills are becoming increasingly important to employers.",
+    "Tip: Keep your CV clean and easy to read with consistent formatting.",
+    "Advice: Include a link to your LinkedIn profile or portfolio.",
+    "Fact: A well-structured CV can make a significant difference in your job application process.",
+    "Fact: Tailoring your CV for each job application can increase your chances of landing an interview.",
+    "Fact: A concise CV is more likely to be read in full.",
+    "Fact: Use bullet points to highlight your achievements and responsibilities.",
+];

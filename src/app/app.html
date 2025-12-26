@@ -1,0 +1,257 @@
+<ng-container *ngIf="!isStandaloneRoute">
+<div class="h-screen w-screen flex overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-200" 
+     [class.print-mode]="isRenderMode"
+     [class.!h-auto]="isRenderMode" 
+     [class.!overflow-visible]="isRenderMode">
+  
+  <!-- 1. SLIM SIDEBAR (AI STUDIO STYLE) -->
+  <aside *ngIf="!isRenderMode" class="w-16 h-full flex flex-col items-center py-4 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50">
+    <!-- Logo/Home -->
+    <button (click)="goHome()" 
+      class="p-3 mb-6 rounded-xl transition-all"
+      [class.bg-euro-blue]="appMode === 'welcome'"
+      [class.text-white]="appMode === 'welcome'"
+      [class.text-slate-400]="appMode !== 'welcome'"
+      [class.hover:bg-slate-100]="appMode !== 'welcome'"
+      [class.dark:hover:bg-slate-800]="appMode !== 'welcome'"
+      title="Home">
+      <lucide-icon name="home" [size]="24"></lucide-icon>
+    </button>
+    
+    <!-- Profile Link -->
+    <a routerLink="/profile" 
+      class="p-3 mb-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+      title="My Profile">
+      <lucide-icon name="user" [size]="24"></lucide-icon>
+    </a>
+
+    <!-- Navigation Icons -->
+    <div class="flex-1 flex flex-col gap-4">
+      <button (click)="setSidebarTab('history')"
+        class="p-3 rounded-xl transition-all relative group"
+        [class.bg-euro-blue/10]="activeSidebarTab === 'history' && isSidebarExpanded"
+        [class.text-euro-blue]="activeSidebarTab === 'history' && isSidebarExpanded"
+        [class.text-slate-400]="!(activeSidebarTab === 'history' && isSidebarExpanded)"
+        [class.hover:bg-slate-100]="!(activeSidebarTab === 'history' && isSidebarExpanded)"
+        [class.dark:hover:bg-slate-800]="!(activeSidebarTab === 'history' && isSidebarExpanded)"
+        title="History">
+        <lucide-icon name="history" [size]="24"></lucide-icon>
+        <div *ngIf="historyItems.length > 0" class="absolute top-2 right-2 w-2 h-2 bg-euro-blue rounded-full"></div>
+      </button>
+
+      <button (click)="handleStartScratch()"
+        class="p-3 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+        title="New CV">
+        <lucide-icon name="plus" [size]="24"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Bottom Icons -->
+    <div class="flex flex-col gap-4">
+      <button (click)="toggleTheme()"
+        class="p-3 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+        [title]="isDarkMode ? 'Light Mode' : 'Dark Mode'">
+        <lucide-icon [name]="isDarkMode ? 'sun' : 'moon'" [size]="24"></lucide-icon>
+      </button>
+      
+      <button (click)="setSidebarTab('settings')"
+        class="p-3 rounded-xl transition-all"
+        [class.bg-euro-blue/10]="activeSidebarTab === 'settings' && isSidebarExpanded"
+        [class.text-euro-blue]="activeSidebarTab === 'settings' && isSidebarExpanded"
+        [class.text-slate-400]="!(activeSidebarTab === 'settings' && isSidebarExpanded)"
+        [class.hover:bg-slate-100]="!(activeSidebarTab === 'settings' && isSidebarExpanded)"
+        [class.dark:hover:bg-slate-800]="!(activeSidebarTab === 'settings' && isSidebarExpanded)"
+        title="Settings">
+        <lucide-icon name="settings" [size]="24"></lucide-icon>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 2. EXPANDABLE PANEL (History/Settings) -->
+  <div *ngIf="!isRenderMode" [class.w-72]="isSidebarExpanded" [class.w-0]="!isSidebarExpanded"
+    class="h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 overflow-hidden flex flex-col z-40">
+    
+    <!-- History Tab -->
+    <ng-container *ngIf="activeSidebarTab === 'history'">
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h2 class="font-bold text-slate-800 dark:text-white">Recent CVs</h2>
+        <button (click)="toggleSidebar()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <lucide-icon name="chevron-left" [size]="20"></lucide-icon>
+        </button>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-3 space-y-6">
+        <!-- Pinned Section -->
+        <div *ngIf="pinnedHistory.length > 0">
+          <h3 class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Pinned</h3>
+          <div class="space-y-1">
+            <div *ngFor="let h of pinnedHistory"
+              class="group flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              (click)="loadHistoryItem(h)">
+              <div class="flex items-center gap-3 min-w-0">
+                <lucide-icon name="file-text" [size]="16" class="text-euro-blue shrink-0"></lucide-icon>
+                <span class="text-sm text-slate-700 dark:text-slate-300 truncate">{{h.title}}</span>
+              </div>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="$event.stopPropagation(); pinHistory(h.id, false)"
+                  class="p-1 text-euro-blue hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Unpin">
+                  <lucide-icon name="pin-off" [size]="14"></lucide-icon>
+                </button>
+                <button (click)="$event.stopPropagation(); deleteHistory(h.id)"
+                  class="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Delete">
+                  <lucide-icon name="trash-2" [size]="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Section -->
+        <div>
+          <h3 class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Recent</h3>
+          <div class="space-y-1">
+            <div *ngFor="let h of recentHistory"
+              class="group flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              (click)="loadHistoryItem(h)">
+              <div class="flex items-center gap-3 min-w-0">
+                <lucide-icon name="clock" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
+                <span class="text-sm text-slate-700 dark:text-slate-300 truncate">{{h.title}}</span>
+              </div>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="$event.stopPropagation(); pinHistory(h.id, true)"
+                  class="p-1 text-slate-400 hover:text-euro-blue hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded" title="Pin">
+                  <lucide-icon name="pin" [size]="14"></lucide-icon>
+                </button>
+                <button (click)="$event.stopPropagation(); deleteHistory(h.id)"
+                  class="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" title="Delete">
+                  <lucide-icon name="trash-2" [size]="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+            <div *ngIf="recentHistory.length === 0 && pinnedHistory.length === 0" class="px-3 py-8 text-center">
+              <lucide-icon name="file-text" [size]="32" class="text-slate-200 dark:text-slate-800 mx-auto mb-2"></lucide-icon>
+              <p class="text-xs text-slate-400">No CVs found</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Settings Tab -->
+    <ng-container *ngIf="activeSidebarTab === 'settings'">
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h2 class="font-bold text-slate-800 dark:text-white">Settings</h2>
+        <button (click)="toggleSidebar()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <lucide-icon name="chevron-left" [size]="20"></lucide-icon>
+        </button>
+      </div>
+      <div class="p-4 space-y-6">
+        <div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Preferences</h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-700 dark:text-slate-300">Dark Mode</span>
+              <button (click)="toggleTheme()" 
+                class="w-10 h-5 rounded-full relative transition-colors"
+                [class.bg-euro-blue]="isDarkMode"
+                [class.bg-slate-200]="!isDarkMode">
+                <div class="absolute top-1 w-3 h-3 rounded-full bg-white transition-all"
+                  [class.left-6]="isDarkMode"
+                  [class.left-1]="!isDarkMode"></div>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">About</h3>
+          <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              EuroCV Builder v1.0.0<br>
+              A professional tool for creating ATS-friendly CVs.
+            </p>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- 3. MAIN CONTENT AREA -->
+  <main class="flex-1 h-full flex flex-col relative overflow-hidden"
+        [class.!h-auto]="isRenderMode"
+        [class.!overflow-visible]="isRenderMode">
+    
+    <!-- Top Navigation Bar -->
+    <nav *ngIf="!isRenderMode" class="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 z-30">
+      <div class="flex items-center gap-4">
+        <button *ngIf="!isSidebarExpanded" (click)="toggleSidebar()" 
+          class="p-2 -ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 lg:hidden">
+          <lucide-icon name="menu" [size]="20"></lucide-icon>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-euro-blue rounded-lg flex items-center justify-center">
+            <lucide-icon name="file-text" class="text-white" [size]="18"></lucide-icon>
+          </div>
+          <span class="font-bold text-slate-800 dark:text-white hidden sm:block">EuroCV Builder</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button (click)="handleStartScratch()" 
+          class="px-3 py-1.5 bg-euro-blue text-white text-sm font-medium rounded-lg hover:bg-euro-dark transition-colors flex items-center gap-2">
+          <lucide-icon name="plus" [size]="16"></lucide-icon>
+          <span class="hidden sm:inline">New CV</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Content Container -->
+    <div class="flex-1 relative overflow-hidden"
+         [class.!overflow-visible]="isRenderMode">
+      <!-- Welcome Screen Mode -->
+      <div *ngIf="appMode === 'welcome'" class="h-full overflow-y-auto">
+        <app-welcome-screen 
+          (startScratch)="handleStartScratch($event)"
+          (importData)="handleImport($event)">
+        </app-welcome-screen>
+      </div>
+
+      <!-- Editor Mode -->
+      <div *ngIf="appMode === 'editor'" class="h-full flex flex-col lg:flex-row"
+           [class.!h-auto]="isRenderMode"
+           [class.!overflow-visible]="isRenderMode">
+        <!-- Editor Panel -->
+        <div *ngIf="!isRenderMode" [style.width.%]="isDesktop ? editorWidth : 100"
+          [class]="'h-full bg-white dark:bg-slate-900 z-20 transition-all duration-300 ease-in-out shadow-2xl border-r dark:border-slate-800 print:hidden flex-shrink-0 ' + (showPreviewMobile && !isDesktop ? 'hidden' : 'block')">
+          <app-editor #editorRef 
+            [cvData]="cvData" (cvDataChange)="cvData = $event" 
+            [jobDescription]="jobDescription" (jobDescriptionChange)="jobDescription = $event" 
+            [atsResult]="atsResult" (atsResultChange)="atsResult = $event"
+            (togglePreview)="togglePreview()" [showPreviewMobile]="showPreviewMobile" 
+            [isDarkMode]="isDarkMode" (toggleTheme)="toggleTheme()" 
+            (backToHome)="goHome()" (refreshHistory)="loadHistory()">
+          </app-editor>
+        </div>
+
+        <!-- Resize Handle (Desktop Only) -->
+        <div *ngIf="isDesktop" (mousedown)="startResizing($event)"
+          class="w-4 -ml-2 hover:bg-euro-blue/10 cursor-col-resize hidden lg:flex items-center justify-center transition-colors z-30 relative group">
+          <div class="h-8 w-1 bg-slate-300 dark:bg-slate-700 rounded-full group-hover:bg-euro-blue transition-colors"></div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div [class]="'flex-1 h-full overflow-y-auto bg-slate-100 dark:bg-slate-950 p-4 md:p-8 flex items-start justify-center transition-colors duration-200 print:block print:w-full print:p-0 print:overflow-visible print:bg-white ' + (!showPreviewMobile && !isDesktop && !isRenderMode ? 'hidden' : 'block')"
+             [class.p-0]="isRenderMode" [class.bg-white]="isRenderMode">
+          <button *ngIf="!isDesktop && showPreviewMobile" (click)="togglePreview()"
+            class="fixed bottom-6 right-6 z-50 bg-euro-blue text-white p-4 rounded-full shadow-lg hover:bg-euro-dark print:hidden">
+            Edit CV
+          </button>
+          <app-cv-preview *ngIf="cvData" [data]="cvData"></app-cv-preview>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</ng-container>
+
+<router-outlet *ngIf="isStandaloneRoute"></router-outlet>

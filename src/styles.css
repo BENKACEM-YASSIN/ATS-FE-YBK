@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Rich Text Rendering Styles */
+.rich-text ul {
+  list-style-type: disc;
+  margin-left: 1.2em;
+  margin-bottom: 0.5em;
+}
+
+.rich-text ol {
+  list-style-type: decimal;
+  margin-left: 1.2em;
+  margin-bottom: 0.5em;
+}
+
+.rich-text li {
+  margin-bottom: 0.2em;
+}
+
+.rich-text b,
+.rich-text strong {
+  font-weight: 700;
+}
+
+.rich-text i,
+.rich-text em {
+  font-style: italic;
+}
+
+.rich-text u {
+  text-decoration: underline;
+}
+
+.rich-text p {
+  margin-bottom: 0.5em;
+}
+
+.rich-text p:last-child {
+  margin-bottom: 0;
+}

@@ -1,0 +1,306 @@
+<div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
+  <!-- Top Bar (Optional, reuse from App if needed, but here we build a simple one) -->
+  <header class="bg-euro-blue text-white py-2 px-6 flex items-center justify-between shadow-md z-10">
+    <div class="flex items-center gap-4">
+        <button (click)="goHome()" class="hover:bg-white/10 p-2 rounded-lg transition-colors">
+            <lucide-icon name="home" [size]="20"></lucide-icon>
+        </button>
+        <h1 class="font-bold text-lg">My Profile</h1>
+    </div>
+    <div class="flex items-center gap-4 text-sm">
+        <button class="hover:text-blue-100">My Library</button>
+        <button class="hover:text-blue-100">Settings</button>
+    </div>
+  </header>
+
+  <div class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="w-full lg:w-80 flex flex-col gap-6">
+        
+        <!-- Profile Card -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center text-center relative overflow-hidden">
+            <div class="w-full h-24 bg-gradient-to-r from-euro-blue/10 to-blue-500/10 absolute top-0 left-0"></div>
+            
+            <!-- Photo -->
+            <div class="relative mt-4 mb-4">
+                <div class="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-white dark:border-slate-900 flex items-center justify-center overflow-hidden shadow-sm">
+                    <img *ngIf="profile?.photoUrl" [src]="profile?.photoUrl" class="w-full h-full object-cover">
+                    <lucide-icon *ngIf="!profile?.photoUrl" name="user" [size]="40" class="text-slate-400"></lucide-icon>
+                </div>
+                <button (click)="uploadPhoto()" class="absolute bottom-0 right-0 bg-white dark:bg-slate-800 p-1.5 rounded-full border border-slate-200 dark:border-slate-700 text-euro-blue shadow-sm hover:bg-slate-50">
+                    <lucide-icon name="camera" [size]="14"></lucide-icon>
+                </button>
+            </div>
+
+            <!-- Name & Title -->
+            <div class="w-full group relative mb-1">
+                <h2 *ngIf="!isEditingName" (click)="startEditName()" class="text-xl font-bold text-slate-800 dark:text-white cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1 rounded transition-colors flex items-center justify-center gap-2">
+                    {{profile?.firstName || 'Guest'}} {{profile?.lastName || 'User'}}
+                    <lucide-icon name="edit-2" [size]="14" class="opacity-0 group-hover:opacity-50"></lucide-icon>
+                </h2>
+                <div *ngIf="isEditingName" class="flex flex-col gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <input #firstNameInput [value]="tempFirstName" placeholder="First Name" class="text-sm border rounded px-2 py-1 outline-none focus:border-euro-blue bg-white dark:bg-slate-900 dark:text-white" autofocus>
+                    <input #lastNameInput [value]="tempLastName" placeholder="Last Name" class="text-sm border rounded px-2 py-1 outline-none focus:border-euro-blue bg-white dark:bg-slate-900 dark:text-white">
+                    <div class="flex justify-end gap-2 mt-1">
+                        <button (click)="isEditingName = false" class="text-xs text-slate-400 hover:text-slate-600">Cancel</button>
+                        <button (click)="saveName(firstNameInput.value, lastNameInput.value)" class="text-xs bg-euro-blue text-white px-3 py-1 rounded-full">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full group relative mb-4">
+                <p *ngIf="!isEditingTitle" (click)="startEditTitle()" class="text-sm text-slate-500 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1 rounded transition-colors flex items-center justify-center gap-2">
+                    {{profile?.title || 'Job Title'}}
+                    <lucide-icon name="edit-2" [size]="12" class="opacity-0 group-hover:opacity-50"></lucide-icon>
+                </p>
+                <div *ngIf="isEditingTitle" class="flex gap-2 p-1">
+                    <input #titleInput [value]="tempTitle" (keyup.enter)="saveTitle(titleInput.value)" placeholder="Job Title" class="w-full text-sm border rounded px-2 py-1 outline-none focus:border-euro-blue bg-white dark:bg-slate-900 dark:text-white" autofocus>
+                    <button (click)="saveTitle(titleInput.value)" class="text-green-600"><lucide-icon name="check" [size]="16"></lucide-icon></button>
+                </div>
+            </div>
+
+            <!-- Motto -->
+            <div class="w-full mb-4 group relative">
+                <div *ngIf="!isEditingMotto" (click)="startEditMotto()" class="text-sm text-slate-600 italic cursor-pointer hover:bg-slate-50 p-2 rounded border border-transparent hover:border-slate-100 transition-all min-h-[2rem] flex items-center justify-center">
+                    {{profile?.motto || 'Add your motto'}}
+                    <lucide-icon name="edit-2" [size]="12" class="ml-2 opacity-0 group-hover:opacity-50"></lucide-icon>
+                </div>
+                <div *ngIf="isEditingMotto" class="flex gap-2">
+                    <input #mottoInput [value]="tempMotto" (keyup.enter)="saveMotto(mottoInput.value)" class="w-full text-sm border rounded px-2 py-1 outline-none focus:border-euro-blue bg-transparent" autofocus>
+                    <button (click)="saveMotto(mottoInput.value)" class="text-green-600"><lucide-icon name="check" [size]="16"></lucide-icon></button>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="w-full mb-6 group relative">
+                 <div *ngIf="!isEditingSummary" (click)="startEditSummary()" class="text-xs text-slate-500 text-left line-clamp-3 cursor-pointer hover:bg-slate-50 p-2 rounded border border-transparent hover:border-slate-100 transition-all min-h-[3rem]">
+                    {{profile?.summary || 'Add a short summary about yourself...'}}
+                </div>
+                 <div *ngIf="isEditingSummary">
+                    <textarea #summaryInput [value]="tempSummary" rows="3" class="w-full text-xs border rounded px-2 py-1 outline-none focus:border-euro-blue bg-transparent resize-none"></textarea>
+                    <div class="flex justify-end gap-2 mt-1">
+                        <button (click)="isEditingSummary = false" class="text-xs text-slate-400 hover:text-slate-600">Cancel</button>
+                        <button (click)="saveSummary(summaryInput.value)" class="text-xs bg-euro-blue text-white px-2 py-1 rounded">Save</button>
+                    </div>
+                 </div>
+            </div>
+
+            <button class="w-full py-2 border border-euro-blue text-euro-blue rounded-lg font-medium hover:bg-euro-blue hover:text-white transition-colors text-sm">
+                View full profile
+            </button>
+        </div>
+
+        <!-- Progress -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold text-slate-800 dark:text-white text-sm">Profile Progress</h3>
+                <span class="text-euro-blue font-bold text-sm">{{profile?.profileProgress}}%</span>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                <div class="bg-euro-blue h-full rounded-full transition-all duration-500" [style.width.%]="profile?.profileProgress"></div>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <button (click)="goHome()" class="w-full text-left px-6 py-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between group transition-colors">
+                <span class="text-slate-700 dark:text-slate-300 font-medium text-sm">Create a CV</span>
+                <lucide-icon name="plus" [size]="16" class="text-slate-400 group-hover:text-euro-blue"></lucide-icon>
+            </button>
+            <button (click)="createNewCoverLetter()" class="w-full text-left px-6 py-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between group transition-colors">
+                <span class="text-slate-700 dark:text-slate-300 font-medium text-sm">Create a cover letter</span>
+                <lucide-icon name="file-text" [size]="16" class="text-slate-400 group-hover:text-euro-blue"></lucide-icon>
+            </button>
+            <button (click)="viewLibrary()" class="w-full text-left px-6 py-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between group transition-colors">
+                <span class="text-slate-700 dark:text-slate-300 font-medium text-sm">My Library</span>
+                <span class="bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full">{{profile?.cvCount || 0}}</span>
+            </button>
+            <button (click)="viewJobTrends()" class="w-full text-left px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between group transition-colors">
+                <span class="text-slate-700 dark:text-slate-300 font-medium text-sm">Job & skill trends</span>
+                <lucide-icon name="trending-up" [size]="16" class="text-slate-400 group-hover:text-euro-blue"></lucide-icon>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col gap-6">
+        
+        <!-- Opportunities -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-slate-800 dark:text-white">Opportunities for you</h3>
+                <button (click)="seeFavourites()" class="text-euro-blue text-sm font-medium hover:underline flex items-center gap-1">
+                    <lucide-icon name="heart" [size]="14"></lucide-icon> See My Favourites
+                </button>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                <div (click)="addJob()" class="border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow cursor-pointer group">
+                    <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <lucide-icon name="briefcase" [size]="24" class="text-euro-blue"></lucide-icon>
+                    </div>
+                    <h4 class="font-bold text-slate-800 dark:text-white mb-1">Jobs</h4>
+                    <p class="text-xs text-slate-500">Coming soon: Job suggestions tailored to your profile</p>
+                </div>
+
+                <div (click)="addCourse()" class="border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow cursor-pointer group">
+                    <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <lucide-icon name="graduation-cap" [size]="24" class="text-emerald-600"></lucide-icon>
+                    </div>
+                    <h4 class="font-bold text-slate-800 dark:text-white mb-1">Courses</h4>
+                    <p class="text-xs text-slate-500">Update your profile to receive course opportunities</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-slate-800 dark:text-white">Complete your profile</h3>
+                    <lucide-icon name="info" [size]="14" class="text-slate-400"></lucide-icon>
+                </div>
+            </div>
+            
+            <div class="flex overflow-x-auto gap-4 pb-2 scrollbar-thin">
+                <!-- Card 1 -->
+                <div class="min-w-[280px] border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex gap-4 items-start relative bg-slate-50/50 dark:bg-slate-800/50">
+                    <div class="bg-white p-2 rounded-lg shadow-sm">
+                        <lucide-icon name="car" [size]="20" class="text-blue-500"></lucide-icon>
+                    </div>
+                    <div class="flex-1">
+                        <h5 class="font-bold text-sm text-slate-800 dark:text-white mb-1">Driving Licence</h5>
+                        <p class="text-xs text-slate-500 mb-3 leading-relaxed">Remember to add or update your driving license(s).</p>
+                        <button (click)="addDrivingLicence()" class="px-3 py-1 bg-euro-blue text-white text-xs font-medium rounded-full hover:bg-euro-dark transition-colors">Add</button>
+                    </div>
+                    <button class="absolute top-2 right-2 text-slate-400 hover:text-slate-600"><lucide-icon name="x" [size]="14"></lucide-icon></button>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="min-w-[280px] border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex gap-4 items-start relative bg-slate-50/50 dark:bg-slate-800/50">
+                    <div class="bg-white p-2 rounded-lg shadow-sm">
+                        <lucide-icon name="camera" [size]="20" class="text-blue-500"></lucide-icon>
+                    </div>
+                    <div class="flex-1">
+                        <h5 class="font-bold text-sm text-slate-800 dark:text-white mb-1">Profile Picture</h5>
+                        <p class="text-xs text-slate-500 mb-3 leading-relaxed">Add a professional photo to your profile.</p>
+                        <button (click)="uploadPhoto()" class="px-3 py-1 bg-euro-blue text-white text-xs font-medium rounded-full hover:bg-euro-dark transition-colors">Add</button>
+                    </div>
+                     <button class="absolute top-2 right-2 text-slate-400 hover:text-slate-600"><lucide-icon name="x" [size]="14"></lucide-icon></button>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="min-w-[280px] border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex gap-4 items-start relative bg-slate-50/50 dark:bg-slate-800/50">
+                    <div class="bg-white p-2 rounded-lg shadow-sm">
+                        <lucide-icon name="music" [size]="20" class="text-blue-500"></lucide-icon>
+                    </div>
+                    <div class="flex-1">
+                        <h5 class="font-bold text-sm text-slate-800 dark:text-white mb-1">Hobbies</h5>
+                        <p class="text-xs text-slate-500 mb-3 leading-relaxed">Share your interests and hobbies.</p>
+                        <button (click)="addHobby()" class="px-3 py-1 bg-euro-blue text-white text-xs font-medium rounded-full hover:bg-euro-dark transition-colors">Add</button>
+                    </div>
+                     <button class="absolute top-2 right-2 text-slate-400 hover:text-slate-600"><lucide-icon name="x" [size]="14"></lucide-icon></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Figures -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-slate-800 dark:text-white">Key Figures</h3>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Profile Stats -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Profile</h4>
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <lucide-icon name="briefcase" [size]="16" class="text-euro-blue"></lucide-icon>
+                            <span>{{profile?.workExperienceCount || 0}} Work experience(s)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <lucide-icon name="graduation-cap" [size]="16" class="text-euro-blue"></lucide-icon>
+                            <span>{{profile?.educationCount || 0}} Education entries</span>
+                        </div>
+                         <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <lucide-icon name="languages" [size]="16" class="text-euro-blue"></lucide-icon>
+                            <span>{{profile?.languagesCount || 0}} Language(s)</span>
+                        </div>
+                         <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <lucide-icon name="zap" [size]="16" class="text-euro-blue"></lucide-icon>
+                            <span>{{profile?.skillsCount || 0}} skills</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-slate-100 dark:bg-slate-800"></div>
+
+                <!-- Docs Stats -->
+                 <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Documents and Applications</h4>
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                            <lucide-icon name="file-text" [size]="16" class="text-slate-400"></lucide-icon>
+                            <span>{{profile?.cvCount || 0}} CVs in your library</span>
+                        </div>
+                         <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                            <lucide-icon name="file" [size]="16" class="text-slate-400"></lucide-icon>
+                            <span>{{profile?.coverLetterCount || 0}} Cover Letters</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-slate-800 dark:text-white">Activity</h3>
+            </div>
+            
+            <div class="space-y-4">
+                 <div class="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-euro-blue">
+                        <lucide-icon name="clock" [size]="16"></lucide-icon>
+                    </div>
+                    <span>You last visited the platform on <span class="font-medium text-slate-900 dark:text-white">{{profile?.lastVisit | date:'shortDate'}}</span></span>
+                </div>
+                 <div class="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400" *ngIf="profile?.lastEditedDate">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-euro-blue">
+                        <lucide-icon name="edit-3" [size]="16"></lucide-icon>
+                    </div>
+                    <span>Last edited file "{{profile?.lastEditedFileName || 'Untitled'}}" on <span class="font-medium text-slate-900 dark:text-white">{{profile?.lastEditedDate | date:'shortDate'}}</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Stats (Skills/Interests) -->
+        <div class="grid md:grid-cols-2 gap-6">
+             <div (click)="addSkill()" class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:border-euro-blue transition-colors group">
+                <lucide-icon name="trophy" [size]="32" class="text-purple-500 group-hover:scale-110 transition-transform"></lucide-icon>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white">My Skills</h4>
+                    <p class="text-xs text-slate-500">Set your skills</p>
+                </div>
+                <button class="mt-2 text-xs font-bold text-euro-blue flex items-center gap-1">
+                    <lucide-icon name="plus-circle" [size]="14"></lucide-icon> Add new skills
+                </button>
+             </div>
+
+             <div (click)="addInterest()" class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:border-euro-blue transition-colors group">
+                <lucide-icon name="target" [size]="32" class="text-blue-500 group-hover:scale-110 transition-transform"></lucide-icon>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white">My Interests</h4>
+                    <p class="text-xs text-slate-500">Set your interests</p>
+                </div>
+                <button class="mt-2 text-xs font-bold text-euro-blue flex items-center gap-1">
+                    <lucide-icon name="plus-circle" [size]="14"></lucide-icon> Add new interests
+                </button>
+             </div>
+        </div>
+
+    </main>
+  </div>
+</div>
