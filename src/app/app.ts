@@ -93,10 +93,28 @@ export class AppComponent implements OnInit {
 
   appMode: 'welcome' | 'editor' = 'welcome';
   isRenderMode = false;
-  isStandaloneRoute = false;
+  // Initialize based on current URL so standalone routes render correctly on first load
+  isStandaloneRoute = typeof window !== 'undefined' && (
+    window.location.pathname.includes('/pdf-preview') ||
+    window.location.pathname.includes('/profile') ||
+    window.location.pathname.includes('/jobs')
+  );
   showPreviewMobile: boolean = false;
   isDarkMode: boolean = false;
   isDesktop: boolean = true;
+
+  previewZoom = 1;
+  readonly minPreviewZoom = 0.6;
+  readonly maxPreviewZoom = 1.8;
+  readonly previewZoomStep = 0.05;
+
+  previewPanX = 0;
+  previewPanY = 0;
+  isPanningPreview = false;
+  private previewStartMouseX = 0;
+  private previewStartMouseY = 0;
+  private previewStartPanX = 0;
+  private previewStartPanY = 0;
 
   isResizing = false;
   editorWidth = 40;
@@ -109,10 +127,12 @@ export class AppComponent implements OnInit {
   recentHistory: any[] = [];
 
   ngOnInit() {
+    // Ensure correct mode on initial load (NavigationEnd may have already fired)
+    this.updateStandaloneRoute(this.router.url);
+
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.isStandaloneRoute = event.urlAfterRedirects.includes('/pdf-preview') || 
-                                 event.urlAfterRedirects.includes('/profile');
+        this.updateStandaloneRoute(event.urlAfterRedirects);
       }
     });
 
@@ -125,6 +145,14 @@ export class AppComponent implements OnInit {
     } else {
       document.documentElement.classList.remove('dark');
     }
+  }
+
+  private updateStandaloneRoute(url: string) {
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    const effectiveUrl = pathname || url;
+    this.isStandaloneRoute = effectiveUrl.includes('/pdf-preview') ||
+                             effectiveUrl.includes('/profile') ||
+                             effectiveUrl.includes('/jobs');
   }
 
   private handleRouteParams() {
@@ -249,6 +277,7 @@ export class AppComponent implements OnInit {
   startResizing(event: MouseEvent) {
     if (!this.isDesktop) return;
     this.isResizing = true;
+    this.isPanningPreview = false;
     event.preventDefault();
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
@@ -256,19 +285,34 @@ export class AppComponent implements OnInit {
 
   @HostListener('window:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
-    if (!this.isResizing) return;
-    const totalWidth = window.innerWidth;
-    const newWidth = (event.clientX / totalWidth) * 100;
-    if (newWidth > 20 && newWidth < 80) {
-      this.editorWidth = newWidth;
+    if (this.isResizing) {
+      const totalWidth = window.innerWidth;
+      const newWidth = (event.clientX / totalWidth) * 100;
+      if (newWidth > 20 && newWidth < 80) {
+        this.editorWidth = newWidth;
+      }
+      event.preventDefault();
+      return;
     }
-    event.preventDefault();
+
+    if (this.isPanningPreview) {
+      const deltaX = event.clientX - this.previewStartMouseX;
+      const deltaY = event.clientY - this.previewStartMouseY;
+      this.previewPanX = this.previewStartPanX + deltaX;
+      this.previewPanY = this.previewStartPanY + deltaY;
+      event.preventDefault();
+    }
   }
 
   @HostListener('window:mouseup')
   onMouseUp() {
-    if (this.isResizing) {
-      this.isResizing = false;
+    const wasResizing = this.isResizing;
+    const wasPanningPreview = this.isPanningPreview;
+
+    this.isResizing = false;
+    this.isPanningPreview = false;
+
+    if (wasResizing || wasPanningPreview) {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     }
@@ -276,6 +320,49 @@ export class AppComponent implements OnInit {
 
   togglePreview() {
     this.showPreviewMobile = !this.showPreviewMobile;
+  }
+
+  startPreviewPan(event: MouseEvent) {
+    if (this.isRenderMode || event.button !== 0) return;
+
+    this.isPanningPreview = true;
+    this.previewStartMouseX = event.clientX;
+    this.previewStartMouseY = event.clientY;
+    this.previewStartPanX = this.previewPanX;
+    this.previewStartPanY = this.previewPanY;
+
+    document.body.style.cursor = 'grabbing';
+    document.body.style.userSelect = 'none';
+    event.preventDefault();
+  }
+
+  panPreview(deltaX: number, deltaY = 0) {
+    this.previewPanX += deltaX;
+    this.previewPanY += deltaY;
+  }
+
+  zoomInPreview() {
+    this.setPreviewZoom(this.previewZoom + this.previewZoomStep);
+  }
+
+  zoomOutPreview() {
+    this.setPreviewZoom(this.previewZoom - this.previewZoomStep);
+  }
+
+  setPreviewZoomFromSlider(event: Event) {
+    const target = event.target as HTMLInputElement | null;
+    if (!target) return;
+    this.setPreviewZoom(Number(target.value) / 100);
+  }
+
+  resetPreviewView() {
+    this.previewZoom = 1;
+    this.previewPanX = 0;
+    this.previewPanY = 0;
+  }
+
+  private setPreviewZoom(value: number) {
+    this.previewZoom = Math.max(this.minPreviewZoom, Math.min(this.maxPreviewZoom, Number(value.toFixed(2))));
   }
 
   toggleTheme() {

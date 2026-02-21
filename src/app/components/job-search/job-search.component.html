@@ -1,0 +1,106 @@
+<div class="job-search-container">
+  <div class="header">
+    <h1>Job Search & Bulk Apply</h1>
+    <p class="subtitle">Find jobs matching your profile and apply in bulk</p>
+  </div>
+
+  <div class="search-info" *ngIf="searchLocation || searchTitle">
+    <p>
+      <strong>Searching:</strong> {{ searchTitle || 'Any position' }} 
+      <span *ngIf="searchLocation">in {{ searchLocation }}</span>
+    </p>
+  </div>
+
+  <div class="actions-bar" *ngIf="selectedJobs.size > 0">
+    <div class="selected-count">
+      {{ selectedJobs.size }} job{{ selectedJobs.size > 1 ? 's' : '' }} selected
+    </div>
+    <button class="bulk-apply-btn" (click)="bulkApply()">
+      <lucide-icon name="mail"></lucide-icon>
+      Bulk Apply ({{ selectedJobs.size }})
+    </button>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <p>Searching for jobs...</p>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>{{ error }}</p>
+    <button (click)="loadJobs()">Retry</button>
+  </div>
+
+  <div class="jobs-list" *ngIf="!loading && !error">
+    <div *ngIf="jobs.length === 0" class="no-jobs">
+      <p>No jobs found with email addresses. Try adjusting your search criteria.</p>
+    </div>
+
+    <div class="job-card" *ngFor="let job of jobs" [class.selected]="isSelected(job.id)">
+      <div class="job-header">
+        <div class="job-title-section">
+          <input 
+            type="checkbox" 
+            [checked]="isSelected(job.id)"
+            (change)="toggleJobSelection(job.id)"
+            class="job-checkbox"
+          />
+          <div class="job-info">
+            <h3 class="job-title">{{ job.title }}</h3>
+            <p class="job-company">{{ job.company }}</p>
+          </div>
+        </div>
+        <div class="job-score" *ngIf="job.matchScore !== null">
+          <div class="score-badge" [class]="'score-' + getScoreColor(job.matchScore)">
+            <span class="score-value">{{ job.matchScore | number:'1.0-0' }}%</span>
+            <span class="score-label">{{ getScoreLabel(job.matchScore) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="job-details">
+        <div class="detail-item">
+          <lucide-icon name="map-pin"></lucide-icon>
+          <span>{{ job.location }}</span>
+        </div>
+        <div class="detail-item" *ngIf="job.jobType">
+          <lucide-icon name="briefcase"></lucide-icon>
+          <span>{{ job.jobType }}</span>
+        </div>
+        <div class="detail-item" *ngIf="job.salary">
+          <lucide-icon name="dollar-sign"></lucide-icon>
+          <span>{{ job.salary }}</span>
+        </div>
+        <div class="detail-item" *ngIf="job.email">
+          <lucide-icon name="mail"></lucide-icon>
+          <span class="email">{{ job.email }}</span>
+        </div>
+      </div>
+
+      <div class="job-description" *ngIf="job.description">
+        <p>{{ job.description | slice:0:200 }}{{ job.description.length > 200 ? '...' : '' }}</p>
+      </div>
+
+      <div class="job-reasoning" *ngIf="job.matchReasoning">
+        <p><strong>Match Analysis:</strong> {{ job.matchReasoning }}</p>
+      </div>
+
+      <div class="job-skills" *ngIf="job.requiredSkills && job.requiredSkills.length > 0">
+        <strong>Key Skills:</strong>
+        <div class="skills-tags">
+          <span class="skill-tag" *ngFor="let skill of job.requiredSkills.slice(0, 5)">{{ skill }}</span>
+        </div>
+      </div>
+
+      <div class="job-actions">
+        <button class="btn-secondary" (click)="openJobUrl(job.url)" *ngIf="job.url">
+          <lucide-icon name="external-link"></lucide-icon>
+          View Job Posting
+        </button>
+        <a *ngIf="job.email" [href]="'mailto:' + job.email" class="btn-primary">
+          <lucide-icon name="mail"></lucide-icon>
+          Apply via Email
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

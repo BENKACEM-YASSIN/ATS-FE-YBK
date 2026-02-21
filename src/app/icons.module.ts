@@ -7,7 +7,8 @@ import {
     Mail, Phone, MapPin, Globe, Linkedin, Calendar, Briefcase, GraduationCap, Wrench, User, Star,
     Target, Check, ListPlus, Eye, Sun, Moon, Settings, LayoutTemplate, Palette, Save, Home, CheckSquare,
     FileType, FileJson, Pin, PinOff, Clock, History, Menu, ChevronLeft, Search, PlusCircle,
-     Music, Languages, Zap, Trophy, Edit2, Edit3, Car, TrendingUp, Heart, Camera
+    Music, Languages, Zap, Trophy, Edit2, Edit3, Car, TrendingUp, Heart, Camera, RotateCcw, LayoutDashboard,
+    AlertCircle, DollarSign, ExternalLink, PenTool
 } from 'lucide-angular';
 
 @NgModule({
@@ -19,7 +20,8 @@ import {
             Mail, Phone, MapPin, Globe, Linkedin, Calendar, Briefcase, GraduationCap, Wrench, User, Star,
             Target, Check, ListPlus, Eye, Sun, Moon, Settings, LayoutTemplate, Palette, Save, Home, CheckSquare,
             FileType, FileJson, Pin, PinOff, Clock, History, Menu, ChevronLeft, Search, PlusCircle,
-            Music, Languages, Zap, Trophy, Edit2, Edit3, Car, TrendingUp, Heart, Camera
+            Music, Languages, Zap, Trophy, Edit2, Edit3, Car, TrendingUp, Heart, Camera, RotateCcw, LayoutDashboard,
+            AlertCircle, DollarSign, ExternalLink, PenTool
         })
     ],
     exports: [LucideAngularModule]

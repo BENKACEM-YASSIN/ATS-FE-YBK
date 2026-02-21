@@ -44,6 +44,14 @@ import { CVData } from '../../models/cv.model';
     .print\:text-white { color: #ffffff !important; }
     .print\:text-blue-200 { color: #bfdbfe !important; }
     .print\:text-blue-100 { color: #dbeafe !important; }
+
+    /* Keep on-screen preview line wrapping aligned with generated PDF. */
+    .cv-page .print-content-padding {
+      padding: 8mm !important;
+    }
+    .cv-page .print-sidebar-padding {
+      padding: 6mm !important;
+    }
     
     @media print {
       :host {
@@ -53,9 +61,13 @@ import { CVData } from '../../models/cv.model';
       .cv-page {
         margin: 0 !important;
         box-shadow: none !important;
-        width: 100% !important;
-        min-height: 0 !important;
-        overflow: visible !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
       }
       * {
         -webkit-print-color-adjust: exact !important;
@@ -89,8 +101,11 @@ import { CVData } from '../../models/cv.model';
       }
       /* Content padding to respect printer margins while allowing BG bleed */
       .print-content-padding {
-        padding-top: 15mm !important;
-        padding-bottom: 15mm !important;
+        padding: 8mm !important;
+      }
+      /* Slightly tighter padding for sidebars to avoid oversized blank areas */
+      .print-sidebar-padding {
+        padding: 6mm !important;
       }
       /* Prevent split of essential HR sections */
       .section-item {
@@ -102,6 +117,10 @@ import { CVData } from '../../models/cv.model';
         display: flex !important;
         flex-direction: row !important;
         align-items: stretch !important;
+        height: 100% !important;
+      }
+      .print-flex-container > div {
+        height: 100% !important;
       }
       /* Better text flow for ATS */
       .rich-text p, .rich-text li {

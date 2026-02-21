@@ -1,0 +1,9 @@
+.preview-transform {
+  transform-origin: top center;
+  will-change: transform;
+  transition: transform 120ms ease-out;
+}
+
+.preview-transform--panning {
+  transition: none;
+}
