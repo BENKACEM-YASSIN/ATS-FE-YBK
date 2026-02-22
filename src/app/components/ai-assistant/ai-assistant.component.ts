@@ -60,8 +60,8 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
 
         try {
-            if (mode === 'bullets' && this.jobDescription && this.type === 'job') {
-                const results = await this.geminiService.generateTailoredBullets(cleanText, this.jobDescription);
+            if (mode === 'bullets' && this.type === 'job') {
+                const results = await this.geminiService.generateTailoredBullets(cleanText, this.jobDescription ?? '');
 
                 this.ngZone.run(() => {
                     this.bullets = results;
@@ -89,6 +89,30 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
                 this.cdr.detectChanges();
             });
         }
+    }
+
+    get primaryEnhanceMode(): 'standard' | 'bullets' {
+        return this.type === 'job' ? 'bullets' : 'standard';
+    }
+
+    get primaryActionLabel(): string {
+        if (this.type === 'job') {
+            return this.jobDescription?.trim() ? 'Generate ATS Bullets' : 'Generate Bullets';
+        }
+        return this.label;
+    }
+
+    get primaryActionTitle(): string {
+        if (this.type === 'job') {
+            return this.jobDescription?.trim()
+                ? 'Generate ATS-focused bullets ranked by job-description relevance'
+                : 'Generate high-impact bullets from this experience';
+        }
+        return 'Generate improved versions';
+    }
+
+    get bulletSortHint(): string {
+        return this.jobDescription?.trim() ? 'Sorted by ATS impact (high to low)' : 'Sorted by impact';
     }
 
     private startTipCycle() {

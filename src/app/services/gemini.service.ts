@@ -29,7 +29,7 @@ export class GeminiService {
         }
     }
 
-    async generateTailoredBullets(draftText: string, jobDescription: string): Promise<string[]> {
+    async generateTailoredBullets(draftText: string, jobDescription: string = ''): Promise<string[]> {
         try {
             return await firstValueFrom(
                 this.http.post<string[]>(`${this.apiUrl}/generate-bullets`, { draftText, jobDescription })
