@@ -7,7 +7,9 @@ export type CVTheme =
     | 'creative-teal'
     | 'compact-stack'
     | 'serif-elegant'
-    | 'bold-header';
+    | 'bold-header'
+    | 'ats-clean-blue'
+    | 'ats-centered-indigo';
 
 export interface CVData {
     personalInfo: PersonalInfo;

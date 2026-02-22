@@ -139,6 +139,7 @@
                     placeholder="Brief summary of your professional background..."></app-rich-text-editor>
                 <app-ai-assistant [currentText]="cvData.personalInfo.aboutMe"
                     (apply)="updatePersonalInfo('aboutMe', $event)" type="summary"
+                    label="Rewrite Summary" [supportsBullets]="true"
                     [jobDescription]="jobDescription"></app-ai-assistant>
             </app-section-wrapper>
 
@@ -191,7 +192,8 @@
                                     placeholder="Describe your key responsibilities..."></app-rich-text-editor>
                                 <app-ai-assistant [currentText]="exp.description || exp.title"
                                     (apply)="updateWorkExperience(exp.id, 'description', $event)" type="job"
-                                    label="AI Enhance" [jobDescription]="jobDescription"></app-ai-assistant>
+                                    label="Rewrite Paragraph" [supportsBullets]="true"
+                                    [jobDescription]="jobDescription"></app-ai-assistant>
                             </div>
                         </div>
                     </div>
@@ -242,6 +244,11 @@
                                 <app-rich-text-editor [value]="edu.description"
                                     (valueChange)="updateEducation(edu.id, 'description', $event)"
                                     placeholder="Details about your degree..."></app-rich-text-editor>
+                                <app-ai-assistant [currentText]="edu.description || edu.degree"
+                                    (apply)="updateEducation(edu.id, 'description', $event)" type="education"
+                                    label="Rewrite Education" [supportsBullets]="true"
+                                    [contextHint]="'Qualification: ' + (edu.degree || '') + '\nOrganization: ' + (edu.school || '') + '\nLocation: ' + (edu.city || '') + ' ' + (edu.country || '')"
+                                    [jobDescription]="jobDescription"></app-ai-assistant>
                             </div>
                         </div>
                     </div>
@@ -390,6 +397,12 @@
                                         <app-rich-text-editor [value]="item.description"
                                             (valueChange)="updateCustomItem(sectionId, item.id, 'description', $event)"
                                             placeholder="Description..."></app-rich-text-editor>
+                                        <app-ai-assistant [currentText]="item.description || item.title"
+                                            (apply)="updateCustomItem(sectionId, item.id, 'description', $event)"
+                                            type="custom" label="Rewrite Section"
+                                            [supportsBullets]="true"
+                                            [contextHint]="'Section title: ' + (customSection.title || '') + '\nEntry title: ' + (item.title || '') + '\nSubtitle: ' + (item.subtitle || '')"
+                                            [jobDescription]="jobDescription"></app-ai-assistant>
                                     </div>
                                 </div>
                             </div>

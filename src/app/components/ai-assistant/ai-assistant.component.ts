@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, inject, NgZone, ChangeDetectorRef, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconsModule } from '../../icons.module';
-import { GeminiService } from '../../services/gemini.service';
+import { GeminiService, EnhanceType } from '../../services/gemini.service';
 import { LOADING_TIPS } from '../../constants/tips';
 
 @Component({
@@ -13,9 +13,11 @@ import { LOADING_TIPS } from '../../constants/tips';
 })
 export class AiAssistantComponent implements OnInit, OnDestroy {
     @Input() currentText: string = '';
-    @Input() type: 'job' | 'summary' | 'skill' = 'summary';
+    @Input() type: EnhanceType = 'summary';
     @Input() label: string = 'Enhance with AI';
     @Input() jobDescription?: string;
+    @Input() contextHint: string = '';
+    @Input() supportsBullets: boolean = false;
 
     @Output() apply = new EventEmitter<string>();
 
@@ -45,11 +47,16 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
     async handleEnhance(mode: 'standard' | 'bullets') {
         const cleanText = this.currentText.replace(/<[^>]*>/g, '').trim();
+        const cleanContext = this.contextHint.replace(/<[^>]*>/g, '').trim();
 
         if (!cleanText) {
             this.error = "Please enter some text first.";
             return;
         }
+
+        const aiInput = cleanContext
+            ? `Section Context:\n${cleanContext}\n\nSection Text:\n${cleanText}`
+            : cleanText;
 
         this.loading = true;
         this.startTipCycle();
@@ -60,8 +67,12 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
 
         try {
-            if (mode === 'bullets' && this.type === 'job') {
-                const results = await this.geminiService.generateTailoredBullets(cleanText, this.jobDescription ?? '');
+            if (mode === 'bullets' && this.supportsBullets) {
+                const results = await this.geminiService.generateTailoredBullets(
+                    aiInput,
+                    this.jobDescription ?? '',
+                    this.type
+                );
 
                 this.ngZone.run(() => {
                     this.bullets = results;
@@ -71,7 +82,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
                     this.scrollToResults();
                 });
             } else {
-                const results = await this.geminiService.enhanceText(cleanText, this.type);
+                const results = await this.geminiService.enhanceText(aiInput, this.type);
 
                 this.ngZone.run(() => {
                     this.suggestions = results;
@@ -92,27 +103,110 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     }
 
     get primaryEnhanceMode(): 'standard' | 'bullets' {
+        if (!this.supportsBullets) return 'standard';
         return this.type === 'job' ? 'bullets' : 'standard';
     }
 
+    get secondaryEnhanceMode(): 'standard' | 'bullets' {
+        return this.primaryEnhanceMode === 'bullets' ? 'standard' : 'bullets';
+    }
+
+    get showSecondaryAction(): boolean {
+        return this.supportsBullets;
+    }
+
+    get primaryActionIcon(): string {
+        return this.primaryEnhanceMode === 'bullets' ? 'target' : 'sparkles';
+    }
+
+    get secondaryActionIcon(): string {
+        return this.secondaryEnhanceMode === 'bullets' ? 'target' : 'sparkles';
+    }
+
+    get primaryActionClass(): string {
+        return this.primaryEnhanceMode === 'bullets'
+            ? 'text-purple-600 hover:text-purple-800'
+            : 'text-euro-blue hover:text-euro-dark';
+    }
+
+    get secondaryActionClass(): string {
+        return this.secondaryEnhanceMode === 'bullets'
+            ? 'text-purple-600 hover:text-purple-800'
+            : 'text-euro-blue hover:text-euro-dark';
+    }
+
     get primaryActionLabel(): string {
-        if (this.type === 'job') {
-            return this.jobDescription?.trim() ? 'Generate ATS Bullets' : 'Generate Bullets';
-        }
-        return this.label;
+        return this.getActionLabel(this.primaryEnhanceMode);
+    }
+
+    get secondaryActionLabel(): string {
+        return this.getActionLabel(this.secondaryEnhanceMode);
     }
 
     get primaryActionTitle(): string {
+        return this.getActionTitle(this.primaryEnhanceMode);
+    }
+
+    get secondaryActionTitle(): string {
+        return this.getActionTitle(this.secondaryEnhanceMode);
+    }
+
+    get bulletPanelTitle(): string {
         if (this.type === 'job') {
-            return this.jobDescription?.trim()
-                ? 'Generate ATS-focused bullets ranked by job-description relevance'
-                : 'Generate high-impact bullets from this experience';
+            return this.jobDescription?.trim() ? 'ATS Tailored Bullets' : 'Experience Bullets';
         }
-        return 'Generate improved versions';
+        if (this.type === 'education') {
+            return 'Education Bullet Suggestions';
+        }
+        if (this.type === 'custom') {
+            return 'Section Bullet Suggestions';
+        }
+        if (this.type === 'summary') {
+            return 'Summary Bullet Suggestions';
+        }
+        return 'Bullet Suggestions';
     }
 
     get bulletSortHint(): string {
-        return this.jobDescription?.trim() ? 'Sorted by ATS impact (high to low)' : 'Sorted by impact';
+        if (this.type === 'job' && this.jobDescription?.trim()) {
+            return 'Sorted by ATS impact (high to low)';
+        }
+        return 'Sorted by relevance and impact';
+    }
+
+    private getActionLabel(mode: 'standard' | 'bullets'): string {
+        if (mode === 'bullets') {
+            if (this.type === 'job') {
+                return this.jobDescription?.trim() ? 'Generate ATS Bullets' : 'Generate Bullets';
+            }
+            if (this.type === 'education') return 'Generate Education Bullets';
+            if (this.type === 'custom') return 'Generate Section Bullets';
+            if (this.type === 'summary') return 'Generate Summary Bullets';
+            return 'Generate Bullets';
+        }
+        if (this.type === 'job') return 'Rewrite Paragraph';
+        return this.label;
+    }
+
+    private getActionTitle(mode: 'standard' | 'bullets'): string {
+        if (mode === 'bullets') {
+            if (this.type === 'job') {
+                return this.jobDescription?.trim()
+                    ? 'Generate ATS-focused bullets ranked by job-description relevance'
+                    : 'Generate high-impact bullets from this section';
+            }
+            if (this.type === 'education') {
+                return 'Generate education-focused bullet points from this content';
+            }
+            if (this.type === 'custom') {
+                return 'Generate concise bullets tailored for this custom section';
+            }
+            if (this.type === 'summary') {
+                return 'Generate concise summary bullets';
+            }
+            return 'Generate bullet points';
+        }
+        return 'Rewrite this section as a stronger paragraph';
     }
 
     private startTipCycle() {

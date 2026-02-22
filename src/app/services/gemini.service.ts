@@ -11,6 +11,8 @@ export interface ATSResult {
     suggestions: string[];
 }
 
+export type EnhanceType = 'job' | 'summary' | 'skill' | 'education' | 'custom';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -18,7 +20,7 @@ export class GeminiService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.apiUrl}/ai`;
 
-    async enhanceText(text: string, type: 'job' | 'summary' | 'skill'): Promise<string[]> {
+    async enhanceText(text: string, type: EnhanceType): Promise<string[]> {
         try {
             return await firstValueFrom(
                 this.http.post<string[]>(`${this.apiUrl}/enhance-text`, { text, type })
@@ -29,10 +31,14 @@ export class GeminiService {
         }
     }
 
-    async generateTailoredBullets(draftText: string, jobDescription: string = ''): Promise<string[]> {
+    async generateTailoredBullets(
+        draftText: string,
+        jobDescription: string = '',
+        sectionType: EnhanceType = 'job'
+    ): Promise<string[]> {
         try {
             return await firstValueFrom(
-                this.http.post<string[]>(`${this.apiUrl}/generate-bullets`, { draftText, jobDescription })
+                this.http.post<string[]>(`${this.apiUrl}/generate-bullets`, { draftText, jobDescription, sectionType })
             );
         } catch (error) {
             console.error("Bullet Generation Error:", error);

@@ -185,6 +185,25 @@ export class CvPreviewComponent {
     return this.data.sectionOrder.filter(id => this.data.sectionColumns?.[id] !== 'left');
   }
 
+  formatMonthYear(dateStr: string): string {
+    if (!dateStr) return '';
+    const dateParts = dateStr.split('-');
+    if (dateParts.length >= 2) {
+      const [year, month] = dateParts;
+      return `${month}/${year}`;
+    }
+    return dateStr;
+  }
+
+  formatDateRange(startDate: string, endDate: string, current: boolean): string {
+    const start = this.formatMonthYear(startDate);
+    const end = current ? 'Present' : this.formatMonthYear(endDate);
+    if (!start && !end) return '';
+    if (!start) return end;
+    if (!end) return start;
+    return `${start} - ${end}`;
+  }
+
   allLevelsSame(lang: any): boolean {
     const levels = [lang.listening, lang.reading, lang.spokenInteraction, lang.spokenProduction, lang.writing];
     return levels.every(level => level === levels[0]);

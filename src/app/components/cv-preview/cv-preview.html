@@ -242,6 +242,238 @@
         </div>
     </div>
 
+    <!-- 9. ATS Clean Blue -->
+    <div *ngSwitchCase="'ats-clean-blue'"
+        class="bg-white w-full p-12 text-[13px] leading-relaxed text-slate-700 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto print-content-padding"
+        style="font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;">
+        <header class="mb-8">
+            <h1 class="text-6xl font-semibold tracking-tight text-blue-700 leading-none mb-3">
+                {{data.personalInfo.firstName}} <span class="font-bold">{{data.personalInfo.lastName}}</span>
+            </h1>
+            <p class="text-[18px] text-slate-600 mb-3">{{data.personalInfo.title}}</p>
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] text-slate-600">
+                <span *ngIf="data.personalInfo.city || data.personalInfo.country">
+                    {{data.personalInfo.city}}{{data.personalInfo.city && data.personalInfo.country ? ', ' : ''}}{{data.personalInfo.country}}
+                </span>
+                <span *ngIf="(data.personalInfo.city || data.personalInfo.country) && data.personalInfo.phone">&bull;</span>
+                <span *ngIf="data.personalInfo.phone">{{data.personalInfo.phone}}</span>
+                <span *ngIf="data.personalInfo.phone && data.personalInfo.email">&bull;</span>
+                <span *ngIf="data.personalInfo.email" class="break-all">{{data.personalInfo.email}}</span>
+                <span *ngIf="(data.personalInfo.phone || data.personalInfo.email) && data.personalInfo.linkedin">&bull;</span>
+                <span *ngIf="data.personalInfo.linkedin" class="break-all">{{data.personalInfo.linkedin}}</span>
+            </div>
+        </header>
+
+        <div *ngIf="data.personalInfo.aboutMe" class="mb-8">
+            <div class="text-[16px] leading-8 text-slate-600 rich-text" [innerHTML]="data.personalInfo.aboutMe"></div>
+        </div>
+
+        <div class="space-y-8 ats-clean-content">
+            <ng-container *ngFor="let id of data.sectionOrder">
+                <div *ngIf="id !== 'aboutMe'" class="section-block">
+                    <h2 class="text-[15px] font-semibold uppercase tracking-wide text-blue-700 border-b border-slate-200 pb-2 mb-4">
+                        {{getSectionTitle(id)}}
+                    </h2>
+
+                    <ng-container [ngSwitch]="id">
+                        <ng-container *ngSwitchCase="'workExperience'">
+                            <div class="space-y-5">
+                                <div *ngFor="let exp of data.workExperience" class="section-item section-chunk">
+                                    <div class="flex items-start justify-between gap-4 mb-1">
+                                        <h3 class="text-[17px] font-semibold text-slate-800">{{exp.title}}</h3>
+                                        <span class="text-[17px] text-slate-800 whitespace-nowrap">
+                                            {{formatDateRange(exp.startDate, exp.endDate, exp.current)}}
+                                        </span>
+                                    </div>
+                                    <div class="text-[15px] text-slate-500 mb-2">
+                                        {{exp.employer}}{{exp.employer && (exp.city || exp.country) ? ', ' : ''}}{{exp.city}}{{exp.city && exp.country ? ', ' : ''}}{{exp.country}}
+                                    </div>
+                                    <div class="text-slate-700 rich-text" [innerHTML]="exp.description"></div>
+                                </div>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngSwitchCase="'education'">
+                            <div class="space-y-4">
+                                <div *ngFor="let edu of data.education" class="section-chunk">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <h3 class="text-[17px] font-semibold text-slate-800">{{edu.degree}}</h3>
+                                        <span class="text-[15px] text-slate-600 whitespace-nowrap">
+                                            {{formatDateRange(edu.startDate, edu.endDate, edu.current)}}
+                                        </span>
+                                    </div>
+                                    <div class="text-[15px] text-slate-500">
+                                        {{edu.school}}{{edu.school && (edu.city || edu.country) ? ', ' : ''}}{{edu.city}}{{edu.city && edu.country ? ', ' : ''}}{{edu.country}}
+                                    </div>
+                                    <div *ngIf="edu.description" class="text-slate-700 rich-text mt-1" [innerHTML]="edu.description"></div>
+                                </div>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngSwitchCase="'skills'">
+                            <div class="space-y-2">
+                                <div *ngIf="data.skills.digitalSkills.length > 0" class="section-chunk space-y-1.5">
+                                    <div *ngFor="let cat of data.skills.digitalSkills" class="text-[15px] text-slate-700">
+                                        <span class="font-semibold text-slate-800">{{cat.name || 'Skills'}}:</span>
+                                        <span> {{cat.skills.join(', ')}}</span>
+                                    </div>
+                                </div>
+                                <div *ngIf="data.skills.softSkills.length > 0" class="section-chunk text-[15px] text-slate-700">
+                                    <span class="font-semibold text-slate-800">Soft Skills:</span>
+                                    <span> {{data.skills.softSkills.join(', ')}}</span>
+                                </div>
+                                <div *ngIf="data.skills.otherLanguages.length > 0" class="section-chunk space-y-1">
+                                    <div *ngFor="let lang of data.skills.otherLanguages" class="text-[15px] text-slate-700">
+                                        <span class="font-semibold text-slate-800">{{lang.language}}:</span>
+                                        <span> {{getLanguageLevelLabel(lang.listening)}} ({{lang.listening}})</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngSwitchDefault>
+                            <ng-container *ngIf="id.startsWith('custom-')">
+                                <ng-container *ngIf="getCustomSection(id) as section">
+                                    <div class="space-y-4">
+                                        <div *ngFor="let item of section.items" class="section-chunk">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <h3 class="text-[17px] font-semibold text-slate-800">{{item.title}}</h3>
+                                                <span class="text-[15px] text-slate-600 whitespace-nowrap">
+                                                    {{formatDateRange(item.startDate, item.endDate, item.current)}}
+                                                </span>
+                                            </div>
+                                            <div class="text-[15px] text-slate-500">
+                                                {{item.subtitle}}{{item.subtitle && (item.city || item.country) ? ', ' : ''}}{{item.city}}{{item.city && item.country ? ', ' : ''}}{{item.country}}
+                                            </div>
+                                            <div *ngIf="item.description" class="text-slate-700 rich-text mt-1" [innerHTML]="item.description"></div>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </ng-container>
+                        </ng-container>
+                    </ng-container>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+
+    <!-- 10. ATS Centered Indigo -->
+    <div *ngSwitchCase="'ats-centered-indigo'"
+        class="bg-white w-full p-12 text-[14px] leading-relaxed text-slate-800 print:w-[210mm] print:max-w-[210mm] print:mx-0 print:min-h-0 print:h-auto print-content-padding"
+        style="font-family: 'Poppins', 'Avenir Next', 'Segoe UI', sans-serif;">
+        <header class="text-center mb-6">
+            <h1 class="text-5xl font-semibold text-indigo-800 mb-2 tracking-tight">
+                {{data.personalInfo.firstName}} {{data.personalInfo.lastName}}
+            </h1>
+            <div class="flex flex-wrap justify-center items-center gap-x-2 gap-y-1 text-[16px] text-slate-700">
+                <span *ngIf="data.personalInfo.city || data.personalInfo.country">
+                    {{data.personalInfo.city}}{{data.personalInfo.city && data.personalInfo.country ? ', ' : ''}}{{data.personalInfo.country}}
+                </span>
+                <span *ngIf="(data.personalInfo.city || data.personalInfo.country) && data.personalInfo.phone">&bull;</span>
+                <span *ngIf="data.personalInfo.phone">{{data.personalInfo.phone}}</span>
+                <span *ngIf="data.personalInfo.phone && data.personalInfo.email">&bull;</span>
+                <span *ngIf="data.personalInfo.email" class="break-all">{{data.personalInfo.email}}</span>
+                <span *ngIf="(data.personalInfo.phone || data.personalInfo.email) && data.personalInfo.linkedin">&bull;</span>
+                <span *ngIf="data.personalInfo.linkedin" class="break-all">{{data.personalInfo.linkedin}}</span>
+            </div>
+        </header>
+
+        <div class="h-px bg-slate-300 mb-5"></div>
+
+        <div *ngIf="data.personalInfo.title" class="mb-3">
+            <h2 class="text-3xl font-semibold text-slate-900">{{data.personalInfo.title}}</h2>
+        </div>
+        <div *ngIf="data.personalInfo.aboutMe" class="mb-7">
+            <div class="text-[16px] text-slate-700 leading-8 rich-text" [innerHTML]="data.personalInfo.aboutMe"></div>
+        </div>
+
+        <div class="space-y-6 ats-centered-content">
+            <ng-container *ngFor="let id of data.sectionOrder">
+                <div *ngIf="id !== 'aboutMe'" class="section-block">
+                    <h2 class="text-[15px] font-medium uppercase tracking-wide text-indigo-800 border-b border-slate-400 pb-1 mb-3">
+                        {{getSectionTitle(id)}}
+                    </h2>
+
+                    <ng-container [ngSwitch]="id">
+                        <ng-container *ngSwitchCase="'workExperience'">
+                            <div class="space-y-4">
+                                <div *ngFor="let exp of data.workExperience" class="section-item section-chunk">
+                                    <div class="text-[16px] font-semibold text-slate-900">
+                                        {{exp.employer}}
+                                        <span *ngIf="exp.employer && (exp.city || exp.country)" class="font-normal text-slate-500"> &bull; </span>
+                                        <span class="font-normal text-slate-700">{{exp.city}}{{exp.city && exp.country ? ', ' : ''}}{{exp.country}}</span>
+                                        <span *ngIf="(exp.employer || exp.city || exp.country) && (exp.startDate || exp.endDate || exp.current)" class="font-normal text-slate-500"> &bull; </span>
+                                        <span class="font-semibold text-slate-900">{{formatDateRange(exp.startDate, exp.endDate, exp.current)}}</span>
+                                    </div>
+                                    <h3 class="text-[18px] font-semibold text-slate-900 mb-1">{{exp.title}}</h3>
+                                    <div class="text-slate-700 rich-text" [innerHTML]="exp.description"></div>
+                                </div>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngSwitchCase="'education'">
+                            <div class="space-y-3">
+                                <div *ngFor="let edu of data.education" class="section-chunk">
+                                    <h3 class="text-[17px] font-semibold text-slate-900">{{edu.degree}}</h3>
+                                    <div class="text-[16px] text-slate-700">
+                                        {{edu.school}}
+                                        <span *ngIf="edu.school && (edu.city || edu.country)" class="text-slate-500"> &bull; </span>
+                                        {{edu.city}}{{edu.city && edu.country ? ', ' : ''}}{{edu.country}}
+                                    </div>
+                                    <div *ngIf="edu.startDate || edu.endDate || edu.current" class="text-[15px] text-slate-600">
+                                        {{formatDateRange(edu.startDate, edu.endDate, edu.current)}}
+                                    </div>
+                                    <div *ngIf="edu.description" class="text-slate-700 rich-text mt-1" [innerHTML]="edu.description"></div>
+                                </div>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngSwitchCase="'skills'">
+                            <div class="space-y-2">
+                                <div *ngIf="data.skills.digitalSkills.length > 0" class="section-chunk text-[15px]">
+                                    <span *ngFor="let cat of data.skills.digitalSkills; let last = last">
+                                        <span class="font-medium text-slate-900">{{cat.name || 'Skills'}}:</span>
+                                        {{cat.skills.join(', ')}}<span *ngIf="!last"> | </span>
+                                    </span>
+                                </div>
+                                <div *ngIf="data.skills.softSkills.length > 0" class="section-chunk text-[15px]">
+                                    <span class="font-medium text-slate-900">Soft Skills:</span>
+                                    {{data.skills.softSkills.join(', ')}}
+                                </div>
+                                <div *ngIf="data.skills.otherLanguages.length > 0" class="section-chunk text-[15px]">
+                                    <span class="font-medium text-slate-900">Languages:</span>
+                                    <span *ngFor="let lang of data.skills.otherLanguages; let last = last">
+                                        {{lang.language}} ({{lang.listening}})<span *ngIf="!last">, </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngSwitchDefault>
+                            <ng-container *ngIf="id.startsWith('custom-')">
+                                <ng-container *ngIf="getCustomSection(id) as section">
+                                    <div class="space-y-3">
+                                        <div *ngFor="let item of section.items" class="section-chunk">
+                                            <h3 class="text-[17px] font-semibold text-slate-900">{{item.title}}</h3>
+                                            <div class="text-[15px] text-slate-700">
+                                                {{item.subtitle}}
+                                                <span *ngIf="item.subtitle && (item.city || item.country)" class="text-slate-500"> &bull; </span>
+                                                {{item.city}}{{item.city && item.country ? ', ' : ''}}{{item.country}}
+                                                <span *ngIf="(item.subtitle || item.city || item.country) && (item.startDate || item.endDate || item.current)" class="text-slate-500"> &bull; </span>
+                                                {{formatDateRange(item.startDate, item.endDate, item.current)}}
+                                            </div>
+                                            <div *ngIf="item.description" class="text-slate-700 rich-text mt-1" [innerHTML]="item.description"></div>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </ng-container>
+                        </ng-container>
+                    </ng-container>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+
     <!-- Default (Fallback) -->
     <div *ngSwitchDefault class="p-10 text-center">Theme not found</div>
   </ng-container>

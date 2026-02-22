@@ -236,8 +236,23 @@ export class PdfPreviewComponent implements OnInit, AfterViewInit {
          if (wrappers.length >= 2) return wrappers[1] as HTMLElement;
          // Fallback if structure is different
          return page.querySelector('.p-10:not(.bg-slate-100)'); 
+     } else if (this.cvData.theme === 'creative-teal') {
+         return page.querySelector('.space-y-10');
+     } else if (this.cvData.theme === 'compact-stack') {
+         return page.querySelector('.grid.grid-cols-2');
+     } else if (this.cvData.theme === 'serif-elegant') {
+         return page.querySelector('.space-y-8');
+     } else if (this.cvData.theme === 'bold-header') {
+         return page.querySelector('.p-10.space-y-8');
+     } else if (this.cvData.theme === 'ats-clean-blue') {
+         return page.querySelector('.ats-clean-content');
+     } else if (this.cvData.theme === 'ats-centered-indigo') {
+         return page.querySelector('.ats-centered-content');
      }
-     return null;
+     
+     // Generic fallback for future single-column themes.
+     const firstSection = page.querySelector('.section-block') as HTMLElement | null;
+     return firstSection?.parentElement as HTMLElement | null;
   }
   
   clearSidebar(page: HTMLElement) {

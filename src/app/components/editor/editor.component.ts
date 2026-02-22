@@ -149,6 +149,8 @@ export class EditorComponent implements OnInit {
         { id: 'compact-stack', name: 'Compact Stack', color: 'bg-indigo-600' },
         { id: 'serif-elegant', name: 'Serif Elegant', color: 'bg-red-900' },
         { id: 'bold-header', name: 'Bold Header', color: 'bg-blue-800' },
+        { id: 'ats-clean-blue', name: 'ATS Clean Blue', color: 'bg-blue-700' },
+        { id: 'ats-centered-indigo', name: 'ATS Centered Indigo', color: 'bg-indigo-700' },
     ];
 
     async handleReAnalyze() {

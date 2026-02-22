@@ -2,19 +2,20 @@
     <div *ngIf="!suggestions && !bullets" class="flex flex-wrap gap-2">
         <button type="button" (click)="handleEnhance(primaryEnhanceMode)" [disabled]="loading || isTextEmpty"
             class="flex items-center gap-1.5 text-xs font-medium disabled:opacity-50 transition-colors"
-            [ngClass]="type === 'job' ? 'text-purple-600 hover:text-purple-800' : 'text-euro-blue hover:text-euro-dark'"
+            [ngClass]="primaryActionClass"
             [title]="primaryActionTitle">
-            <lucide-icon [name]="loading ? 'loader-2' : (type === 'job' ? 'target' : 'sparkles')" [size]="14"
+            <lucide-icon [name]="loading ? 'loader-2' : primaryActionIcon" [size]="14"
                 [class]="loading ? 'animate-spin' : ''"></lucide-icon>
             {{ loading ? 'Thinking...' : primaryActionLabel }}
         </button>
 
-        <button *ngIf="type === 'job'" type="button" (click)="handleEnhance('standard')"
+        <button *ngIf="showSecondaryAction" type="button" (click)="handleEnhance(secondaryEnhanceMode)"
             [disabled]="loading || isTextEmpty"
-            class="flex items-center gap-1.5 text-xs font-medium text-euro-blue hover:text-euro-dark disabled:opacity-50 transition-colors"
-            title="Alternative paragraph rewrite">
-            <lucide-icon name="sparkles" [size]="14"></lucide-icon>
-            Rewrite Paragraph
+            class="flex items-center gap-1.5 text-xs font-medium disabled:opacity-50 transition-colors"
+            [ngClass]="secondaryActionClass"
+            [title]="secondaryActionTitle">
+            <lucide-icon [name]="secondaryActionIcon" [size]="14"></lucide-icon>
+            {{secondaryActionLabel}}
         </button>
     </div>
 
@@ -72,7 +73,7 @@
         class="mt-2 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-md animate-in fade-in slide-in-from-top-2">
         <div class="flex justify-between items-center mb-2">
             <p class="text-xs font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1">
-                <lucide-icon name="target" [size]="12"></lucide-icon> Tailored Suggestions ({{bullets.length}} options)
+                <lucide-icon name="target" [size]="12"></lucide-icon> {{bulletPanelTitle}} ({{bullets.length}} options)
             </p>
             <button (click)="handleDiscard()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                 <lucide-icon name="x" [size]="14"></lucide-icon>
