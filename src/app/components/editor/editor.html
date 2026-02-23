@@ -72,7 +72,7 @@
 
         <div *ngIf="showThemeSelector"
             class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 animate-fade-in">
-            <button *ngFor="let theme of THEMES" (click)="setTheme(theme.id); showThemeSelector = false;"
+            <button *ngFor="let theme of THEMES" (click)="setTheme(theme.id)"
                 class="p-3 rounded-xl border text-left text-sm font-medium flex items-center gap-3 transition-all"
                 [ngClass]="cvData.theme === theme.id ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 ring-2 ring-primary-500/20' : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600 bg-surface-0 dark:bg-surface-800 text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-800'">
                 <div class="w-4 h-4 rounded-full" [ngClass]="theme.color"></div>
