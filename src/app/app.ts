@@ -15,9 +15,17 @@ import { EMPTY_CV_DATA } from './constants/cv-defaults';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, WelcomeScreenComponent, EditorComponent, CvPreviewComponent, IconsModule, RouterOutlet, RouterLink],
+  imports: [
+    CommonModule,
+    WelcomeScreenComponent,
+    EditorComponent,
+    CvPreviewComponent,
+    IconsModule,
+    RouterOutlet,
+    RouterLink,
+  ],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class AppComponent implements OnInit {
   @ViewChild('editorRef') editorRef: any;
@@ -31,12 +39,11 @@ export class AppComponent implements OnInit {
 
   appMode: 'welcome' | 'editor' = 'welcome';
   isRenderMode = false;
-  // Initialize based on current URL so standalone routes render correctly on first load
-  isStandaloneRoute = typeof window !== 'undefined' && (
-    window.location.pathname.includes('/pdf-preview') ||
-    window.location.pathname.includes('/profile') ||
-    window.location.pathname.includes('/jobs')
-  );
+  isStandaloneRoute =
+    typeof window !== 'undefined' &&
+    (window.location.pathname.includes('/pdf-preview') ||
+      window.location.pathname.includes('/profile') ||
+      window.location.pathname.includes('/jobs'));
   showPreviewMobile: boolean = false;
   isDarkMode: boolean = false;
   isDesktop: boolean = true;
@@ -65,10 +72,9 @@ export class AppComponent implements OnInit {
   recentHistory: any[] = [];
 
   ngOnInit() {
-    // Ensure correct mode on initial load (NavigationEnd may have already fired)
     this.updateStandaloneRoute(this.router.url);
 
-    this.router.events.subscribe(event => {
+    this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.updateStandaloneRoute(event.urlAfterRedirects);
       }
@@ -77,7 +83,7 @@ export class AppComponent implements OnInit {
     this.checkSize();
     this.loadHistory();
     this.handleRouteParams();
-    
+
     if (this.isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -88,16 +94,16 @@ export class AppComponent implements OnInit {
   private updateStandaloneRoute(url: string) {
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
     const effectiveUrl = pathname || url;
-    this.isStandaloneRoute = effectiveUrl.includes('/pdf-preview') ||
-                             effectiveUrl.includes('/profile') ||
-                             effectiveUrl.includes('/jobs');
+    this.isStandaloneRoute =
+      effectiveUrl.includes('/pdf-preview') ||
+      effectiveUrl.includes('/profile') ||
+      effectiveUrl.includes('/jobs');
   }
 
   private handleRouteParams() {
-    // Robust check for render mode using both ActivatedRoute and window.location
     const urlParams = new URLSearchParams(window.location.search);
     const isRenderParam = urlParams.get('render') === '1';
-    
+
     if (isRenderParam) {
       console.log('PDF_RENDER_MODE: Detected via URL params');
       this.isRenderMode = true;
@@ -105,8 +111,7 @@ export class AppComponent implements OnInit {
       this.loadRenderData();
     }
 
-    // Also subscribe to queryParams for standard SPA navigation
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       console.log('PDF_RENDER_MODE: Query params changed', params);
       if (params['render'] === '1' && !this.isRenderMode) {
         console.log('PDF_RENDER_MODE: Detected via ActivatedRoute');
@@ -136,8 +141,8 @@ export class AppComponent implements OnInit {
     try {
       const data = await firstValueFrom(this.http.get<any[]>(`${environment.apiUrl}/history`));
       this.historyItems = data;
-      this.pinnedHistory = data.filter(h => h.pinned);
-      this.recentHistory = data.filter(h => !h.pinned);
+      this.pinnedHistory = data.filter((h) => h.pinned);
+      this.recentHistory = data.filter((h) => !h.pinned);
     } catch (e) {
       console.error('Failed to load history', e);
     }
@@ -155,7 +160,9 @@ export class AppComponent implements OnInit {
 
   async pinHistory(id: number, pinned: boolean) {
     try {
-      await firstValueFrom(this.http.patch(`${environment.apiUrl}/history/${id}/pin?pinned=${pinned}`, {}));
+      await firstValueFrom(
+        this.http.patch(`${environment.apiUrl}/history/${id}/pin?pinned=${pinned}`, {}),
+      );
       await this.loadHistory();
     } catch (e) {
       console.error('Pin failed', e);
@@ -166,18 +173,19 @@ export class AppComponent implements OnInit {
     let loadedData: CVData | null = null;
     if (item.cvDataJson) {
       try {
-        loadedData = typeof item.cvDataJson === 'string' ? JSON.parse(item.cvDataJson) : item.cvDataJson;
+        loadedData =
+          typeof item.cvDataJson === 'string' ? JSON.parse(item.cvDataJson) : item.cvDataJson;
       } catch (e) {
         console.error('Failed to parse CV data', e);
       }
     } else if (item.cvData) {
       loadedData = item.cvData;
     }
-    
+
     if (loadedData) {
       if (!loadedData.theme) loadedData.theme = 'euro-classic';
       this.cvData = loadedData;
-      this.atsResult = null; // Reset ATS score when loading a different CV
+      this.atsResult = null;
       this.appMode = 'editor';
       if (this.editorRef) {
         this.editorRef.currentHistoryId = item.id;
@@ -300,7 +308,10 @@ export class AppComponent implements OnInit {
   }
 
   private setPreviewZoom(value: number) {
-    this.previewZoom = Math.max(this.minPreviewZoom, Math.min(this.maxPreviewZoom, Number(value.toFixed(2))));
+    this.previewZoom = Math.max(
+      this.minPreviewZoom,
+      Math.min(this.maxPreviewZoom, Number(value.toFixed(2))),
+    );
   }
 
   toggleTheme() {
@@ -323,7 +334,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  handleImport(event: { data: CVData, jobDescription?: string, atsResult?: ATSResult }) {
+  handleImport(event: { data: CVData; jobDescription?: string; atsResult?: ATSResult }) {
     console.log('AppComponent handleImport triggered with data:', !!event.data);
     if (event.data) {
       if (!event.data.theme) event.data.theme = 'euro-classic';

@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
   selector: 'app-user-profile',
   standalone: true,
   imports: [CommonModule, IconsModule],
-  templateUrl: './user-profile.html'
+  templateUrl: './user-profile.html',
 })
 export class UserProfileComponent implements OnInit {
   private profileService = inject(ProfileService);
@@ -16,8 +16,7 @@ export class UserProfileComponent implements OnInit {
 
   profile: ProfileDTO | null = null;
   isLoading = true;
-  
-  // Edit states
+
   isEditingName = false;
   isEditingTitle = false;
   isEditingMotto = false;
@@ -48,9 +47,9 @@ export class UserProfileComponent implements OnInit {
   async saveName(first: string, last: string) {
     this.isEditingName = false;
     if (this.profile) {
-        this.profile.firstName = first;
-        this.profile.lastName = last;
-        await this.profileService.updateProfileDetails({ firstName: first, lastName: last });
+      this.profile.firstName = first;
+      this.profile.lastName = last;
+      await this.profileService.updateProfileDetails({ firstName: first, lastName: last });
     }
   }
 
@@ -63,8 +62,8 @@ export class UserProfileComponent implements OnInit {
   async saveTitle(value: string) {
     this.isEditingTitle = false;
     if (this.profile) {
-        this.profile.title = value;
-        await this.profileService.updateProfileDetails({ title: value });
+      this.profile.title = value;
+      await this.profileService.updateProfileDetails({ title: value });
     }
   }
 
@@ -77,8 +76,8 @@ export class UserProfileComponent implements OnInit {
   async saveMotto(value: string) {
     this.isEditingMotto = false;
     if (this.profile) {
-        this.profile.motto = value;
-        await this.profileService.updateProfileDetails({ motto: value });
+      this.profile.motto = value;
+      await this.profileService.updateProfileDetails({ motto: value });
     }
   }
 
@@ -91,8 +90,8 @@ export class UserProfileComponent implements OnInit {
   async saveSummary(value: string) {
     this.isEditingSummary = false;
     if (this.profile) {
-        this.profile.summary = value;
-        await this.profileService.updateProfileDetails({ summary: value });
+      this.profile.summary = value;
+      await this.profileService.updateProfileDetails({ summary: value });
     }
   }
 
@@ -101,18 +100,18 @@ export class UserProfileComponent implements OnInit {
     input.type = 'file';
     input.accept = 'image/*';
     input.onchange = async (e: any) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = async () => {
-                const base64 = reader.result as string;
-                if (this.profile) {
-                    this.profile.photoUrl = base64;
-                    await this.profileService.updateProfileDetails({ photoUrl: base64 });
-                }
-            };
-            reader.readAsDataURL(file);
-        }
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const base64 = reader.result as string;
+          if (this.profile) {
+            this.profile.photoUrl = base64;
+            await this.profileService.updateProfileDetails({ photoUrl: base64 });
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     };
     input.click();
   }
@@ -120,44 +119,39 @@ export class UserProfileComponent implements OnInit {
   async addDrivingLicence() {
     const licence = prompt('Enter driving licence category (e.g. B, A1):');
     if (licence && this.profile) {
-        this.profile.drivingLicence = licence;
-        await this.profileService.updateProfileDetails({ drivingLicence: licence });
+      this.profile.drivingLicence = licence;
+      await this.profileService.updateProfileDetails({ drivingLicence: licence });
     }
   }
 
   async addHobby() {
     const hobby = prompt('Enter a hobby:');
     if (hobby && this.profile) {
-        const hobbies = this.profile.hobbies || [];
-        hobbies.push(hobby);
-        this.profile.hobbies = hobbies;
-        await this.profileService.updateProfileDetails({ hobbies });
+      const hobbies = this.profile.hobbies || [];
+      hobbies.push(hobby);
+      this.profile.hobbies = hobbies;
+      await this.profileService.updateProfileDetails({ hobbies });
     }
   }
 
   async addInterest() {
     const interest = prompt('Enter an interest:');
     if (interest && this.profile) {
-        const interests = this.profile.interests || [];
-        interests.push(interest);
-        this.profile.interests = interests;
-        await this.profileService.updateProfileDetails({ interests });
+      const interests = this.profile.interests || [];
+      interests.push(interest);
+      this.profile.interests = interests;
+      await this.profileService.updateProfileDetails({ interests });
     }
   }
 
   async addSkill() {
-    // Navigate to editor or show modal - for now simple prompt
     const skill = prompt('Enter a skill to add to your profile:');
-    // In a real app, this would likely update the CV JSON structure
-    // For now we just acknowledge the action
     if (skill) {
-        alert('Skill added! (This would sync with your CV)');
+      alert('Skill added! (This would sync with your CV)');
     }
   }
-  
+
   viewLibrary() {
-    // Navigate to library or scroll to library section
-    // For now, maybe just go to home as library isn't separate yet
     this.goHome();
   }
 
@@ -176,11 +170,11 @@ export class UserProfileComponent implements OnInit {
   addCourse() {
     alert('Course suggestions are being tailored for you...');
   }
-  
+
   createNewCv() {
     this.router.navigate(['/']);
   }
-  
+
   createNewCoverLetter() {
     this.router.navigate(['/']);
   }
@@ -188,7 +182,7 @@ export class UserProfileComponent implements OnInit {
   navigateTo(path: string) {
     this.router.navigate([path]);
   }
-  
+
   goHome() {
     this.router.navigate(['/']);
   }
