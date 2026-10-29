@@ -31,6 +31,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     suggestions: string[] | null = null;
     bullets: string[] | null = null;
+    usedModel: string | null = null;
     addedBullets = new Set<number>();
     error: string | null = null;
 
@@ -63,6 +64,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
         this.error = null;
         this.suggestions = null;
         this.bullets = null;
+        this.usedModel = null;
         this.addedBullets.clear();
         this.cdr.detectChanges();
 
@@ -76,6 +78,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
                 this.ngZone.run(() => {
                     this.bullets = results;
+                    this.usedModel = this.geminiService.lastUsedModel;
                     this.loading = false;
                     this.stopTipCycle();
                     this.cdr.detectChanges();
@@ -86,6 +89,7 @@ export class AiAssistantComponent implements OnInit, OnDestroy {
 
                 this.ngZone.run(() => {
                     this.suggestions = results;
+                    this.usedModel = this.geminiService.lastUsedModel;
                     this.loading = false;
                     this.stopTipCycle();
                     this.cdr.detectChanges();

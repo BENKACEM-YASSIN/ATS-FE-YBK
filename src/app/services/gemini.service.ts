@@ -9,6 +9,8 @@ export interface ATSResult {
     matchReasoning: string;
     missingKeywords: string[];
     suggestions: string[];
+    /** Set from the backend response header; never supplied by the model. */
+    modelUsed?: string;
 }
 
 export type EnhanceType = 'job' | 'summary' | 'skill' | 'education' | 'custom';
@@ -19,12 +21,20 @@ export type EnhanceType = 'job' | 'summary' | 'skill' | 'education' | 'custom';
 export class GeminiService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.apiUrl}/ai`;
+    lastUsedModel: string | null = null;
+
+    private rememberModel(model: string | null): string | null {
+        this.lastUsedModel = model;
+        return model;
+    }
 
     async enhanceText(text: string, type: EnhanceType): Promise<string[]> {
         try {
-            return await firstValueFrom(
-                this.http.post<string[]>(`${this.apiUrl}/enhance-text`, { text, type })
+            const response = await firstValueFrom(
+                this.http.post<string[]>(`${this.apiUrl}/enhance-text`, { text, type }, { observe: 'response' })
             );
+            this.rememberModel(response.headers.get('X-Persona-AI-Model'));
+            return response.body ?? [];
         } catch (error) {
             console.error("Enhance Text Error:", error);
             throw new Error("Failed to enhance text. Please try again.");
@@ -37,9 +47,11 @@ export class GeminiService {
         sectionType: EnhanceType = 'job'
     ): Promise<string[]> {
         try {
-            return await firstValueFrom(
-                this.http.post<string[]>(`${this.apiUrl}/generate-bullets`, { draftText, jobDescription, sectionType })
+            const response = await firstValueFrom(
+                this.http.post<string[]>(`${this.apiUrl}/generate-bullets`, { draftText, jobDescription, sectionType }, { observe: 'response' })
             );
+            this.rememberModel(response.headers.get('X-Persona-AI-Model'));
+            return response.body ?? [];
         } catch (error) {
             console.error("Bullet Generation Error:", error);
             throw new Error("Failed to generate bullets.");
@@ -48,9 +60,11 @@ export class GeminiService {
 
     async parseCV(text: string): Promise<CVData> {
         try {
-            const parsed = await firstValueFrom(
-                this.http.post<CVData>(`${this.apiUrl}/parse-cv`, { text })
+            const response = await firstValueFrom(
+                this.http.post<CVData>(`${this.apiUrl}/parse-cv`, { text }, { observe: 'response' })
             );
+            this.rememberModel(response.headers.get('X-Persona-AI-Model'));
+            const parsed = response.body!;
 
             // Add defaults for UI tracking
             parsed.theme = parsed.theme || 'euro-classic';
@@ -66,9 +80,12 @@ export class GeminiService {
 
     async analyzeATS(cvText: string, jobDescription: string): Promise<ATSResult> {
         try {
-            return await firstValueFrom(
-                this.http.post<ATSResult>(`${this.apiUrl}/analyze-ats`, { cvText, jobDescription })
+            const response = await firstValueFrom(
+                this.http.post<ATSResult>(`${this.apiUrl}/analyze-ats`, { cvText, jobDescription }, { observe: 'response' })
             );
+            const result = response.body!;
+            result.modelUsed = this.rememberModel(response.headers.get('X-Persona-AI-Model')) ?? undefined;
+            return result;
         } catch (error) {
             console.error("ATS Analysis Error:", error);
             return {
